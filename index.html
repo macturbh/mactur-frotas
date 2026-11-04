@@ -1,56 +1,1468 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MACTUR - Gestão de Frota</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00C853">
-    <style>
-        body { font-family: Arial, sans-serif; background: #121212; color: #fff; padding: 20px; margin: 0; }
-        .container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #00C853; }
-        label { display: block; margin-top: 10px; font-size: 14px; }
-        select, input, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 4px; border: 1px solid #333; background: #2d2d2d; color: #fff; box-sizing: border-box; }
-        button { background: #00C853; color: #000; font-weight: bold; border: none; cursor: pointer; margin-top: 20px; }
-        button:hover { background: #00e676; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mactur - Dashboard Administrativo de Frota e Abastecimento</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Chart.js + Plugin DataLabels -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+  <style>
+    :root {
+      --mactur-green: #008037;
+      --mactur-yellow: #f1c40f;
+      --mactur-blue: #1e3a8a;
+      --bg-dark: #f4f7f5;
+      --card-bg: #ffffff;
+      --text-main: #1c2b1e;
+      --text-muted: #5c705e;
+      --border-color: #d1ded3;
+      --error-red: #e53e3e;
+      --success-green: #38a169;
+      --info-blue: #3182ce;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    body { background-color: var(--bg-dark); color: var(--text-main); display: flex; min-height: 100vh; }
+
+    /* Tela de Login */
+    #loginScreen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #008037, #1e3a8a); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .login-card { background: white; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; border-top: 6px solid var(--mactur-yellow); }
+    .login-card h2 { text-align: center; color: var(--mactur-green); font-size: 1.5rem; text-transform: uppercase; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .login-card input { padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none; width: 100%; font-weight: 600; }
+    .login-card button { background: var(--mactur-green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+    .login-card button:hover { background: #00662c; }
+
+    aside { width: 260px; background: var(--mactur-green); color: white; display: flex; flex-direction: column; border-right: 4px solid var(--mactur-yellow); flex-shrink: 0; }
+    .brand { padding: 20px; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; background: #00662c; display: flex; align-items: center; gap: 10px; }
+    .menu { list-style: none; padding: 20px 0; display: flex; flex-direction: column; gap: 5px; }
+    .menu li a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: white; text-decoration: none; font-weight: 600; transition: background 0.2s; }
+    .menu li.active a, .menu li a:hover { background: rgba(255, 255, 255, 0.15); border-left: 5px solid var(--mactur-yellow); }
+
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-x: auto; }
+    header { background: white; padding: 15px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 1.4rem; color: var(--mactur-green); }
+    .user-profile { font-weight: 700; color: var(--text-muted); font-size: 0.9rem; display: flex; align-items: center; gap: 15px; }
+    .btn-logout { background: #e53e3e; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.8rem; }
+    
+    .container { padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .card-header h3 { font-size: 1.1rem; color: var(--text-main); }
+
+    .action-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+
+    .stat-card { background: white; border-left: 5px solid var(--mactur-green); padding: 18px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 6px; }
+    .stat-card.yellow { border-left-color: var(--mactur-yellow); }
+    .stat-card.blue { border-left-color: var(--info-blue); }
+    .stat-card.darkgreen { border-left-color: #00662c; }
+    .stat-card span { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .stat-card h2 { font-size: 1.5rem; color: var(--text-main); font-weight: 800; }
+
+    /* Garagens e Tanques Virtuais Maiores e Mais Visíveis */
+    .garagens-dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+    .garagem-card { background: white; border-radius: 12px; border: 1px solid var(--border-color); border-top: 6px solid var(--mactur-green); padding: 22px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 16px; }
+    .garagem-card h3 { font-size: 1.2rem; color: var(--mactur-green); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    
+    .tanque-container { background: #e9ecef; border-radius: 10px; height: 48px; width: 100%; position: relative; overflow: hidden; border: 2px solid #ced4da; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+    .tanque-nivel { background: linear-gradient(90deg, #27ae60, #2ecc71); height: 100%; width: 0%; transition: width 0.6s ease; }
+    .tanque-texto { position: absolute; width: 100%; height: 100%; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 900; color: #1c2b1e; text-shadow: 0 1px 3px rgba(255,255,255,0.9); }
+
+    .garagem-info-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .garagem-info-box { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 3px; }
+    .garagem-info-box span { font-size: 0.72rem; text-transform: uppercase; color: #64748b; font-weight: 800; }
+    .garagem-info-box strong { font-size: 1.1rem; color: var(--text-main); }
+
+    .month-bar { display: flex; gap: 6px; overflow-x: auto; background: white; padding: 12px 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 15px; align-items: center; }
+    .month-bar span { font-weight: 800; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-right: 8px; }
+    .btn-month { background: #f1f5f2; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .btn-month:hover, .btn-month.active { background: var(--mactur-green); color: white; border-color: var(--mactur-green); }
+
+    .filter-bar { display: flex; gap: 12px; background: white; padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border-color); border-top: 4px solid var(--mactur-yellow); margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px; }
+    .filter-group label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+    .filter-group select, .filter-group input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; font-weight: 600; outline: none; background: white; }
+
+    .btn { background: var(--mactur-green); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+    .btn:hover { background: #00662c; }
+    .btn-secondary { background: #e2e8f0; color: #475569; }
+    .btn-excel { background: #27ae60; color: white; }
+    .btn-edit { background: #3182ce; color: white; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; }
+
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+    th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; }
+
+    .charts-grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; margin-bottom: 25px; }
+    .chart-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+    .col-6 { grid-column: span 6; }
+    .col-3 { grid-column: span 3; }
+    .col-2 { grid-column: span 2; }
+    @media (max-width: 1000px) { .col-6, .col-3, .col-2 { grid-column: span 6; } }
+
+    .chart-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Modais */
+    .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: white; width: 100%; max-width: 500px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .modal-header h3 { color: var(--mactur-green); font-size: 1.2rem; }
+    .modal-body { display: flex; flex-direction: column; gap: 14px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>MACTUR - Abastecimento</h2>
-    <form id="formAbastecimento">
-        <label for="veiculo_id">Selecione o Veículo:</label>
-        <select id="veiculo_id" required>
-            <option value="">Carregando veículos...</option>
-        </select>
+  <!-- TELA DE LOGIN -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <h2><i class="fa-solid fa-bus-simple" style="color: var(--mactur-yellow);"></i> Mactur Login</h2>
+      <div id="loginError" style="color: #e53e3e; font-size: 0.85rem; font-weight: 700; text-align: center; display: none;"></div>
+      <div class="filter-group">
+        <label>Usuário (Nome ou CPF)</label>
+        <input type="text" id="loginUsuario" placeholder="Digite seu nome ou CPF">
+      </div>
+      <div class="filter-group">
+        <label>Senha / CPF</label>
+        <input type="password" id="loginSenha" placeholder="Digite sua senha ou CPF">
+      </div>
+      <button onclick="realizarLogin()">Entrar no Painel</button>
+    </div>
+  </div>
 
-        <label for="km_atual">KM Atual:</label>
-        <input type="number" id="km_atual" step="0.01" placeholder="Ex: 18301" required>
+  <aside>
+    <div class="brand"><i class="fa-solid fa-bus-simple" style="color: var(--mactur-yellow);"></i> Mactur Admin</div>
+    <ul class="menu">
+      <li class="active" id="nav-dashboard" onclick="mudarAba('dashboard')"><a href="#"><i class="fa-solid fa-chart-pie"></i> Dashboard Geral</a></li>
+      <li id="nav-veiculos" onclick="mudarAba('veiculos')"><a href="#"><i class="fa-solid fa-car"></i> Veículos</a></li>
+      <li id="nav-usuarios" onclick="mudarAba('usuarios')"><a href="#"><i class="fa-solid fa-users"></i> Usuários / Motoristas</a></li>
+      <li id="nav-garagens" onclick="mudarAba('garagens')"><a href="#"><i class="fa-solid fa-warehouse"></i> Garagens</a></li>
+      <li id="nav-abastecimentos" onclick="mudarAba('abastecimentos')"><a href="#"><i class="fa-solid fa-gas-pump"></i> Abastecimentos</a></li>
+    </ul>
+  </aside>
 
-        <label for="litros">Litros:</label>
-        <input type="number" id="litros" step="0.01" placeholder="Ex: 50.00" required>
+  <div class="main-content">
+    <header>
+      <h1 id="tituloPagina">Dashboard Geral</h1>
+      <div class="user-profile">
+        <span id="userInfoDisplay"><i class="fa-solid fa-circle-user"></i> Carregando...</span>
+        <button class="btn-logout" onclick="realizarLogout()">Sair</button>
+      </div>
+    </header>
 
-        <button type="submit">Salvar Abastecimento</button>
-    </form>
-</div>
+    <div class="container">
 
-<!-- Biblioteca do Supabase via CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Seu arquivo de lógica -->
-<script src="app.js"></script>
+      <!-- ABA DASHBOARD GERAL -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="dashboard-grid">
+          <div class="stat-card"><span>Total de Veículos</span><h2 id="statTotalVeiculos">0</h2></div>
+          <div class="stat-card yellow"><span>Total de Motoristas</span><h2 id="statTotalMotoristas">0</h2></div>
+          <div class="stat-card blue"><span>Total de Garagens</span><h2 id="statTotalGaragens">0</h2></div>
+          <div class="stat-card darkgreen"><span>Total de Abastecimentos</span><h2 id="statTotalAbastGeral">0</h2></div>
+        </div>
 
-<script>
-  // Registra o PWA Service Worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('PWA Ativo!'))
-        .catch(err => console.log('Erro ao registrar SW:', err));
-    });
-  }
-</script>
+        <div class="card" style="margin-top: 10px;">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-gas-pump" style="color: var(--mactur-green);"></i> Tanques Virtuais e Métricas por Garagem (Mês Atual)</h3>
+          </div>
+          <div class="garagens-dashboard-grid" id="gridGaragensDashboard">
+            <p style="text-align:center; grid-column: span 3; color: var(--text-muted);">Carregando tanques e status das garagens...</p>
+          </div>
+        </div>
+      </div>
 
+      <!-- ABA VEÍCULOS -->
+      <div id="tab-veiculos" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Gestão de Veículos</h3>
+            <div class="action-toolbar" id="toolbarVeiculos">
+              <button class="btn" id="btnNovoVeiculo" onclick="abrirModalVeiculo()"><i class="fa-solid fa-plus"></i> Novo Veículo</button>
+              <button class="btn btn-excel" onclick="baixarModeloExcel('veiculos')"><i class="fa-solid fa-download"></i> Baixar Modelo</button>
+              <label class="btn btn-secondary" style="margin:0; cursor:pointer;" id="labelImportVeiculo">
+                <i class="fa-solid fa-upload"></i> Importar Excel <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importarExcel(event, 'veiculos')">
+              </label>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Prefixo</th>
+                  <th>Placa</th>
+                  <th>Modelo</th>
+                  <th>Tipo Veículo</th>
+                  <th>Serviço</th>
+                  <th>Garagem Origem</th>
+                  <th id="thAcoesVeiculo">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaVeiculos">
+                <tr><td colspan="8" style="text-align: center;">Carregando veículos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA USUÁRIOS / MOTORISTAS -->
+      <div id="tab-usuarios" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Gestão de Usuários e Motoristas</h3>
+            <div class="action-toolbar" id="toolbarUsuarios">
+              <button class="btn" id="btnNovoUsuario" onclick="abrirModalUsuario()"><i class="fa-solid fa-user-plus"></i> Novo Usuário</button>
+              <button class="btn btn-excel" onclick="baixarModeloExcel('usuarios')"><i class="fa-solid fa-download"></i> Baixar Modelo</button>
+              <label class="btn btn-secondary" style="margin:0; cursor:pointer;" id="labelImportUsuario">
+                <i class="fa-solid fa-upload"></i> Importar Excel <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importarExcel(event, 'usuarios')">
+              </label>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>CPF</th>
+                  <th>Função</th>
+                  <th>Serviço</th>
+                  <th>Garagem Padrão</th>
+                  <th>Status</th>
+                  <th id="thAcoesUsuario">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaUsuarios">
+                <tr><td colspan="8" style="text-align: center;">Carregando usuários...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA GARAGENS -->
+      <div id="tab-garagens" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Gestão de Garagens</h3>
+            <div class="action-toolbar" id="toolbarGaragens">
+              <button class="btn" id="btnNovaGaragem" onclick="abrirModalGaragem()"><i class="fa-solid fa-plus"></i> Nova Garagem</button>
+              <button class="btn btn-excel" onclick="baixarModeloExcel('garagens')"><i class="fa-solid fa-download"></i> Baixar Modelo</button>
+              <label class="btn btn-secondary" style="margin:0; cursor:pointer;" id="labelImportGaragem">
+                <i class="fa-solid fa-upload"></i> Importar Excel <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importarExcel(event, 'garagens')">
+              </label>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome da Garagem</th>
+                  <th>Cidade / UF</th>
+                  <th id="thAcoesGaragem">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaGaragens">
+                <tr><td colspan="4" style="text-align: center;">Carregando garagens...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA ABASTECIMENTOS -->
+      <div id="tab-abastecimentos" class="tab-content">
+        
+        <!-- BARRA 1: FILTRO RÁPIDO DE MÊS -->
+        <div class="month-bar">
+          <span><i class="fa-solid fa-calendar-days"></i> Mês:</span>
+          <button class="btn-month active" onclick="filtrarMes('TODOS', this)">Todos</button>
+          <button class="btn-month" onclick="filtrarMes('01', this)">Jan</button>
+          <button class="btn-month" onclick="filtrarMes('02', this)">Fev</button>
+          <button class="btn-month" onclick="filtrarMes('03', this)">Mar</button>
+          <button class="btn-month" onclick="filtrarMes('04', this)">Abr</button>
+          <button class="btn-month" onclick="filtrarMes('05', this)">Mai</button>
+          <button class="btn-month" onclick="filtrarMes('06', this)">Jun</button>
+          <button class="btn-month" onclick="filtrarMes('07', this)">Jul</button>
+          <button class="btn-month" onclick="filtrarMes('08', this)">Ago</button>
+          <button class="btn-month" onclick="filtrarMes('09', this)">Set</button>
+          <button class="btn-month" onclick="filtrarMes('10', this)">Out</button>
+          <button class="btn-month" onclick="filtrarMes('11', this)">Nov</button>
+          <button class="btn-month" onclick="filtrarMes('12', this)">Dez</button>
+        </div>
+
+        <!-- BARRA 2: FILTROS SELECIONÁVEIS -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label><i class="fa-solid fa-warehouse"></i> Garagem</label>
+            <select id="filterGaragem" onchange="aoMudarGaragem()">
+              <option value="TODOS">Todas as Garagens</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label><i class="fa-solid fa-bus"></i> Prefixo / Veículo</label>
+            <select id="filterPrefixo" onchange="aplicarFiltrosLocais()">
+              <option value="TODOS">Todos os Veículos</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label><i class="fa-solid fa-user-gear"></i> Motorista</label>
+            <select id="filterMotorista" onchange="aplicarFiltrosLocais()">
+              <option value="TODOS">Todos os Motoristas</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label><i class="fa-solid fa-truck-monster"></i> Tipo de Veículo</label>
+            <select id="filterTipoVeiculo" onchange="aplicarFiltrosLocais()">
+              <option value="TODOS">Todos os Tipos</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label><i class="fa-solid fa-route"></i> Tipo de Serviço</label>
+            <select id="filterServico" onchange="aplicarFiltrosLocais()">
+              <option value="TODOS">Todos os Serviços</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label><i class="fa-solid fa-list-check"></i> Status</label>
+            <select id="filterStatus" onchange="aplicarFiltrosLocais()">
+              <option value="TODOS">Todos os Status</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- INDICADORES / KPIS -->
+        <div class="dashboard-grid">
+          <div class="stat-card yellow"><span>Total Litros Abastecidos</span><h2 id="kpiTotalLitros">0 L</h2></div>
+          <div class="stat-card"><span>Qtd Abastecimentos</span><h2 id="kpiQtdAbastecimentos">0</h2></div>
+          <div class="stat-card yellow"><span>Valor Total</span><h2 id="kpiValorTotal">R$ 0,00</h2></div>
+          <div class="stat-card"><span>Média Geral Garagem</span><h2 id="kpiKmL">0.0 KM/L</h2></div>
+          <div class="stat-card darkgreen"><span>Valor Médio Diesel (R$/L)</span><h2 id="kpiValorMedioDiesel">R$ 0,00</h2></div>
+        </div>
+
+        <!-- GRÁFICOS -->
+        <div class="charts-grid-6">
+          <div class="chart-card col-6">
+            <h3><i class="fa-solid fa-chart-column" style="color:var(--mactur-green)"></i> Evolução do Consumo Mensal de Diesel (Litros) — Fretamento vs Rodoviário</h3>
+            <div class="chart-container"><canvas id="chartEvolucaoMensal"></canvas></div>
+          </div>
+
+          <div class="chart-card col-6">
+            <h3><i class="fa-solid fa-sack-dollar" style="color:var(--mactur-green)"></i> Evolução do Custo Mensal com Diesel (R$) — Fretamento vs Rodoviário</h3>
+            <div class="chart-container"><canvas id="chartEvolucaoCustoMensal"></canvas></div>
+          </div>
+
+          <div class="chart-card col-6">
+            <h3><i class="fa-solid fa-file-invoice-dollar" style="color:var(--mactur-yellow)"></i> Evolução do Custo Mensal Total com Diesel (R$) — Somatório Geral</h3>
+            <div class="chart-container"><canvas id="chartEvolucaoCustoTotal"></canvas></div>
+          </div>
+
+          <div class="chart-card col-2">
+            <h3><i class="fa-solid fa-route" style="color:var(--mactur-yellow)"></i> Consumo por Tipo de Serviço</h3>
+            <div class="chart-container"><canvas id="chartTipoServico"></canvas></div>
+          </div>
+
+          <div class="chart-card col-2">
+            <h3><i class="fa-solid fa-bus" style="color:var(--mactur-green)"></i> Consumo por Tipo de Veículo</h3>
+            <div class="chart-container"><canvas id="chartTipoVeiculo"></canvas></div>
+          </div>
+
+          <div class="chart-card col-2">
+            <h3><i class="fa-solid fa-chart-pie" style="color:var(--mactur-yellow)"></i> Registros por Status (%)</h3>
+            <div class="chart-container"><canvas id="chartStatus"></canvas></div>
+          </div>
+
+          <div class="chart-card col-3">
+            <h3><i class="fa-solid fa-ranking-star" style="color:var(--mactur-green)"></i> Consumo Acumulado por Veículo (Top 10)</h3>
+            <div class="chart-container"><canvas id="chartConsumoCarro"></canvas></div>
+          </div>
+
+          <div class="chart-card col-3">
+            <h3><i class="fa-solid fa-users" style="color:var(--mactur-blue)"></i> Consumo Total por Motorista</h3>
+            <div class="chart-container"><canvas id="chartMotoristas"></canvas></div>
+          </div>
+        </div>
+
+        <!-- HISTÓRICO DE ABASTECIMENTOS -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Histórico de Abastecimentos</h3>
+            <div class="action-toolbar" id="toolbarAbast">
+              <button class="btn btn-excel" onclick="baixarModeloExcel('abastecimentos')"><i class="fa-solid fa-download"></i> Baixar Modelo</button>
+              <label class="btn btn-secondary" style="margin:0; cursor:pointer;" id="labelImportAbast">
+                <i class="fa-solid fa-upload"></i> Importar Excel <input type="file" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importarExcel(event, 'abastecimentos')">
+              </label>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Data/Hora</th>
+                  <th>Motorista (ID/Nome)</th>
+                  <th>Veículo (Prefixo)</th>
+                  <th>KM Atual</th>
+                  <th>Litros</th>
+                  <th>Média (KM/L)</th>
+                  <th>Tipo Veículo</th>
+                  <th>Serviço</th>
+                  <th>Custo (R$)</th>
+                  <th>Status</th>
+                  <th>Abastecedor (ID)</th>
+                  <th>Garagem Origem</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaAbastecimentos">
+                <tr><td colspan="13" style="text-align: center;">Carregando histórico...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL DE GARAGEM -->
+  <div class="modal-overlay" id="modalGaragem">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalGaragemTitulo">Nova Garagem</h3>
+        <button onclick="fecharModal('modalGaragem')" style="border:none; background:none; font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="garagem_id">
+        <div class="filter-group">
+          <label>Nome da Garagem</label>
+          <input type="text" id="garagem_nome" placeholder="Ex: Garagem Betim">
+        </div>
+        <div class="filter-group">
+          <label>Cidade / Estado</label>
+          <input type="text" id="garagem_cidade" placeholder="Ex: Betim - MG">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalGaragem')">Cancelar</button>
+        <button class="btn" onclick="salvarGaragem()">Salvar Garagem</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE USUÁRIO / MOTORISTA -->
+  <div class="modal-overlay" id="modalUsuario">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalUsuarioTitulo">Novo Usuário / Motorista</h3>
+        <button onclick="fecharModal('modalUsuario')" style="border:none; background:none; font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="usuario_id">
+        <div class="filter-group">
+          <label>Nome Completo</label>
+          <input type="text" id="usuario_nome" placeholder="Ex: João da Silva">
+        </div>
+        <div class="filter-group">
+          <label>CPF / CNH (Usado como senha)</label>
+          <input type="text" id="usuario_cpf" placeholder="00000000000">
+        </div>
+        <div class="filter-group">
+          <label>Função</label>
+          <select id="usuario_funcao">
+            <option value="MOTORISTA">MOTORISTA</option>
+            <option value="ABASTECEDOR">ABASTECEDOR</option>
+            <option value="LÍDER">LÍDER</option>
+            <option value="COORDENADOR">COORDENADOR</option>
+            <option value="GERENTE DE GARAGEM">GERENTE DE GARAGEM</option>
+            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+            <option value="DIRETORIA">DIRETORIA</option>
+            <option value="DESENVOLVEDOR">DESENVOLVEDOR</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Tipo de Serviço</label>
+          <select id="usuario_servico">
+            <option value="FRETAMENTO">FRETAMENTO</option>
+            <option value="RODOVIÁRIO">RODOVIÁRIO</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Garagem Padrão</label>
+          <select id="usuario_garagem_id"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalUsuario')">Cancelar</button>
+        <button class="btn" onclick="salvarUsuario()">Salvar Usuário</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE VEÍCULO -->
+  <div class="modal-overlay" id="modalVeiculo">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalVeiculoTitulo">Novo Veículo</h3>
+        <button onclick="fecharModal('modalVeiculo')" style="border:none; background:none; font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="veiculo_id">
+        <div class="filter-group">
+          <label>Prefixo do Veículo</label>
+          <input type="text" id="veiculo_prefixo" placeholder="Ex: 54004">
+        </div>
+        <div class="filter-group">
+          <label>Placa</label>
+          <input type="text" id="veiculo_placa" placeholder="Ex: ABC-1234">
+        </div>
+        <div class="filter-group">
+          <label>Modelo</label>
+          <input type="text" id="veiculo_modelo" placeholder="Ex: Mercedes-Benz OF-1721">
+        </div>
+        <div class="filter-group">
+          <label>Tipo de Veículo</label>
+          <select id="veiculo_tipo">
+            <option value="VAN">VAN</option>
+            <option value="MICRO">MICRO</option>
+            <option value="MICRÃO">MICRÃO</option>
+            <option value="ÔNIBUS">ÔNIBUS</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Tipo de Serviço</label>
+          <select id="veiculo_servico">
+            <option value="FRETAMENTO">FRETAMENTO</option>
+            <option value="RODOVIÁRIO">RODOVIÁRIO</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Garagem Base</label>
+          <select id="veiculo_garagem_id"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal('modalVeiculo')">Cancelar</button>
+        <button class="btn" onclick="salvarVeiculo()">Salvar Veículo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    const SUPABASE_URL = 'https://lniuhtujzobhfpvsbzic.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_3tZVUy-tjD0crDOyBp2p7A_JYFml0Bw';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let abaAtual = 'dashboard';
+    let rawAbastecimentos = [];
+    let cacheDadosGlobais = { veiculos: [], usuarios: [], garagens: [] };
+    let mesSelecionado = 'TODOS';
+    let usuarioLogado = null;
+
+    let chartEvolucaoMensal, chartEvolucaoCustoMensal, chartEvolucaoCustoTotal, chartTipoServico, chartTipoVeiculo, chartStatus, chartConsumoCarro, chartMotoristas;
+
+    // --- CONTROLE DE LOGIN E SESSÃO ---
+    async function realizarLogin() {
+      const userInp = document.getElementById('loginUsuario').value.trim().toLowerCase();
+      const passInp = document.getElementById('loginSenha').value.trim();
+      const errDiv = document.getElementById('loginError');
+      errDiv.style.display = 'none';
+
+      if (!userInp || !passInp) {
+        errDiv.innerText = 'Preencha usuário e senha.';
+        errDiv.style.display = 'block';
+        return;
+      }
+
+      const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*');
+      if (error || !usuarios) {
+        errDiv.innerText = 'Erro ao conectar ao Supabase.';
+        errDiv.style.display = 'block';
+        return;
+      }
+
+      // Busca o usuário comparando Nome, CPF ou CNH
+      const user = usuarios.find(u => {
+        const nomeMatch = u.nome && u.nome.trim().toLowerCase() === userInp;
+        const cpfClean = u.cpf ? u.cpf.replace(/[^\d]/g, '') : '';
+        const cnhClean = u.cnh ? u.cnh.replace(/[^\d]/g, '') : '';
+        const inputClean = userInp.replace(/[^\d]/g, '');
+        
+        const cpfMatch = cpfClean && inputClean && cpfClean === inputClean;
+        const cnhMatch = cnhClean && inputClean && cnhClean === inputClean;
+
+        return nomeMatch || cpfMatch || cnhMatch;
+      });
+
+      if (!user) {
+        errDiv.innerText = 'Usuário não encontrado.';
+        errDiv.style.display = 'block';
+        return;
+      }
+
+      // Validação de senha (pode ser o CPF, a CNH ou senha padrão)
+      const cpfClean = user.cpf ? user.cpf.replace(/[^\d]/g, '') : '';
+      const cnhClean = user.cnh ? user.cnh.replace(/[^\d]/g, '') : '';
+      const passClean = passInp.replace(/[^\d]/g, '');
+
+      const senhaValida = (passInp === user.cpf) || (passInp === user.cnh) || 
+                          (cpfClean && passClean && cpfClean === passClean) || 
+                          (cnhClean && passClean && cnhClean === passClean) ||
+                          (passInp === 'mactur2026') || (passInp === 'mactur123');
+
+      if (!senhaValida) {
+        errDiv.innerText = 'Senha incorreta.';
+        errDiv.style.display = 'block';
+        return;
+      }
+
+      const funcaoUpper = (user.funcao || '').toUpperCase();
+      if (funcaoUpper === 'MOTORISTA' || funcaoUpper === 'ABASTECEDOR') {
+        errDiv.innerText = 'Motoristas e Abastecedores devem utilizar o aplicativo PWA.';
+        errDiv.style.display = 'block';
+        return;
+      }
+
+      usuarioLogado = user;
+      localStorage.setItem('mactur_user', JSON.stringify(user));
+      aplicarPermissoesUsuario();
+      document.getElementById('loginScreen').style.display = 'none';
+      carregarDados();
+    }
+
+    function realizarLogout() {
+      localStorage.removeItem('mactur_user');
+      usuarioLogado = null;
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+
+    function aplicarPermissoesUsuario() {
+      if (!usuarioLogado) return;
+      const f = (usuarioLogado.funcao || '').toUpperCase();
+      const nomeG = cacheDadosGlobais.garagens.find(g => String(g.id) === String(usuarioLogado.garagem_id))?.nome || 'Geral';
+      
+      document.getElementById('userInfoDisplay').innerHTML = `<i class="fa-solid fa-circle-user"></i> ${usuarioLogado.nome} (${usuarioLogado.funcao} - ${nomeG})`;
+
+      const isDesenvolvedor = f === 'DESENVOLVEDOR';
+      const isAdm = f === 'ADMINISTRADOR' || isDesenvolvedor || f === 'ADM';
+
+      document.getElementById('btnNovoVeiculo').style.display = isAdm ? 'flex' : 'none';
+      document.getElementById('btnNovoUsuario').style.display = isAdm ? 'flex' : 'none';
+      document.getElementById('btnNovaGaragem').style.display = isDesenvolvedor ? 'flex' : 'none';
+
+      document.getElementById('labelImportVeiculo').style.display = isAdm ? 'inline-block' : 'none';
+      document.getElementById('labelImportUsuario').style.display = isAdm ? 'inline-block' : 'none';
+      document.getElementById('labelImportGaragem').style.display = isDesenvolvedor ? 'inline-block' : 'none';
+    }
+
+    function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function abrirModalGaragem(garagem = null) {
+      if (!usuarioLogado || usuarioLogado.funcao.toUpperCase() !== 'DESENVOLVEDOR') {
+        alert('Apenas o desenvolvedor pode gerenciar garagens.');
+        return;
+      }
+      document.getElementById('garagem_id').value = garagem ? garagem.id : '';
+      document.getElementById('garagem_nome').value = garagem ? garagem.nome : '';
+      document.getElementById('garagem_cidade').value = garagem ? (garagem.cidade || '') : '';
+      document.getElementById('modalGaragemTitulo').innerText = garagem ? 'Editar Garagem' : 'Nova Garagem';
+      document.getElementById('modalGaragem').classList.add('active');
+    }
+
+    async function salvarGaragem() {
+      const id = document.getElementById('garagem_id').value;
+      const nome = document.getElementById('garagem_nome').value.trim();
+      const cidade = document.getElementById('garagem_cidade').value.trim();
+
+      if (!nome) { alert('Informe o nome da garagem.'); return; }
+
+      let res;
+      if (id) {
+        res = await supabaseClient.from('garagens').update({ nome, cidade }).eq('id', id);
+      } else {
+        res = await supabaseClient.from('garagens').insert([{ nome, cidade }]);
+        if (res.error && res.error.message.includes('null value in column "id"')) {
+          const { data: ultimos } = await supabaseClient.from('garagens').select('id').order('id', { ascending: false }).limit(1);
+          const novoId = (ultimos && ultimos.length > 0 ? (parseInt(ultimos[0].id) || 0) : 0) + 1;
+          res = await supabaseClient.from('garagens').insert([{ id: novoId, nome, cidade }]);
+        }
+      }
+
+      if (res.error) alert('Erro ao salvar garagem: ' + res.error.message);
+      else {
+        fecharModal('modalGaragem');
+        carregarDados();
+      }
+    }
+
+    function abrirModalUsuario(usuario = null) {
+      document.getElementById('usuario_id').value = usuario ? usuario.id : '';
+      document.getElementById('usuario_nome').value = usuario ? usuario.nome : '';
+      document.getElementById('usuario_cpf').value = usuario ? (usuario.cpf || usuario.cnh || '') : '';
+      document.getElementById('usuario_funcao').value = usuario ? (usuario.funcao || 'MOTORISTA') : 'MOTORISTA';
+      document.getElementById('usuario_servico').value = usuario ? (usuario.servico || 'FRETAMENTO') : 'FRETAMENTO';
+      
+      const selG = document.getElementById('usuario_garagem_id');
+      selG.innerHTML = '<option value="">Sem Garagem</option>';
+      cacheDadosGlobais.garagens.forEach(g => {
+        selG.innerHTML += `<option value="${g.id}">${g.nome}</option>`;
+      });
+
+      if (usuarioLogado && ['ADMINISTRADOR', 'ADM'].includes(usuarioLogado.funcao.toUpperCase())) {
+        selG.value = usuarioLogado.garagem_id;
+        selG.disabled = true;
+      } else {
+        selG.disabled = false;
+        if (usuario && usuario.garagem_id) selG.value = usuario.garagem_id;
+      }
+
+      document.getElementById('modalUsuarioTitulo').innerText = usuario ? 'Editar Usuário' : 'Novo Usuário';
+      document.getElementById('modalUsuario').classList.add('active');
+    }
+
+    async function salvarUsuario() {
+      const id = document.getElementById('usuario_id').value;
+      const nome = document.getElementById('usuario_nome').value.trim();
+      const cpf = document.getElementById('usuario_cpf').value.trim();
+      const funcao = document.getElementById('usuario_funcao').value;
+      const servico = document.getElementById('usuario_servico').value;
+      let garagem_id = document.getElementById('usuario_garagem_id').value || null;
+
+      if (usuarioLogado && ['ADMINISTRADOR', 'ADM'].includes(usuarioLogado.funcao.toUpperCase())) {
+        garagem_id = usuarioLogado.garagem_id;
+      }
+
+      if (!nome) { alert('Informe o nome do usuário.'); return; }
+
+      if (['ADMINISTRADOR', 'ADM'].includes(funcao.toUpperCase())) {
+        const jaTemAdm = cacheDadosGlobais.usuarios.find(u => String(u.garagem_id) === String(garagem_id) && u.funcao && ['ADMINISTRADOR', 'ADM'].includes(u.funcao.toUpperCase()) && String(u.id) !== String(id));
+        if (jaTemAdm) {
+          alert(`Não foi possível realizar o cadastro: A garagem selecionada já possui um Administrador cadastrado (${jaTemAdm.nome}). Cada garagem pode ter apenas um Administrador.`);
+          return;
+        }
+      }
+
+      const dados = { nome, cpf, cnh: cpf, funcao, servico, garagem_id };
+      let res;
+
+      if (id) {
+        res = await supabaseClient.from('usuarios').update(dados).eq('id', id);
+      } else {
+        res = await supabaseClient.from('usuarios').insert([dados]);
+        if (res.error && res.error.message.includes('null value in column "id"')) {
+          const { data: ultimos } = await supabaseClient.from('usuarios').select('id').order('id', { ascending: false }).limit(1);
+          const novoId = (ultimos && ultimos.length > 0 ? (parseInt(ultimos[0].id) || 0) : 0) + 1;
+          res = await supabaseClient.from('usuarios').insert([{ id: novoId, ...dados }]);
+        }
+      }
+
+      if (res.error) alert('Erro ao salvar usuário: ' + res.error.message);
+      else {
+        fecharModal('modalUsuario');
+        carregarDados();
+      }
+    }
+
+    function abrirModalVeiculo(veiculo = null) {
+      document.getElementById('veiculo_id').value = veiculo ? veiculo.id : '';
+      document.getElementById('veiculo_prefixo').value = veiculo ? veiculo.prefixo : '';
+      document.getElementById('veiculo_placa').value = veiculo ? (veiculo.placa || '') : '';
+      document.getElementById('veiculo_modelo').value = veiculo ? (veiculo.modelo || '') : '';
+      document.getElementById('veiculo_tipo').value = veiculo ? (veiculo.tipo || 'MICRO') : 'MICRO';
+      document.getElementById('veiculo_servico').value = veiculo ? (veiculo.servico || 'FRETAMENTO') : 'FRETAMENTO';
+      
+      const selG = document.getElementById('veiculo_garagem_id');
+      selG.innerHTML = '<option value="">Sem Garagem</option>';
+      cacheDadosGlobais.garagens.forEach(g => {
+        selG.innerHTML += `<option value="${g.id}">${g.nome}</option>`;
+      });
+
+      if (usuarioLogado && ['ADMINISTRADOR', 'ADM'].includes(usuarioLogado.funcao.toUpperCase())) {
+        selG.value = usuarioLogado.garagem_id;
+        selG.disabled = true;
+      } else {
+        selG.disabled = false;
+        if (veiculo && veiculo.garagem_id) selG.value = veiculo.garagem_id;
+      }
+
+      document.getElementById('modalVeiculoTitulo').innerText = veiculo ? 'Editar Veículo' : 'Novo Veículo';
+      document.getElementById('modalVeiculo').classList.add('active');
+    }
+
+    async function salvarVeiculo() {
+      const id = document.getElementById('veiculo_id').value;
+      const prefixo = document.getElementById('veiculo_prefixo').value.trim();
+      const placa = document.getElementById('veiculo_placa').value.trim();
+      const modelo = document.getElementById('veiculo_modelo').value.trim();
+      const tipo = document.getElementById('veiculo_tipo').value;
+      const servico = document.getElementById('veiculo_servico').value;
+      let garagem_id = document.getElementById('veiculo_garagem_id').value || null;
+
+      if (usuarioLogado && ['ADMINISTRADOR', 'ADM'].includes(usuarioLogado.funcao.toUpperCase())) {
+        garagem_id = usuarioLogado.garagem_id;
+      }
+
+      if (!prefixo) { alert('Informe o prefixo do veículo.'); return; }
+
+      const dados = { prefixo, placa, modelo, tipo, servico, garagem_id };
+      let res;
+
+      if (id) {
+        res = await supabaseClient.from('veiculos').update(dados).eq('id', id);
+      } else {
+        res = await supabaseClient.from('veiculos').insert([dados]);
+        if (res.error && res.error.message.includes('null value in column "id"')) {
+          const { data: ultimos } = await supabaseClient.from('veiculos').select('id').order('id', { ascending: false }).limit(1);
+          const novoId = (ultimos && ultimos.length > 0 ? (parseInt(ultimos[0].id) || 0) : 0) + 1;
+          res = await supabaseClient.from('veiculos').insert([{ id: novoId, ...dados }]);
+        }
+      }
+
+      if (res.error) alert('Erro ao salvar veículo: ' + res.error.message);
+      else {
+        fecharModal('modalVeiculo');
+        carregarDados();
+      }
+    }
+
+    function baixarModeloExcel(tabela) {
+      let modelos = {
+        abastecimentos: [{ "data_hora": "02/01/2026 05:30", "motorista_id": 56, "veiculo_id": 71, "km_atual": 469974, "litros": 176.6, "media": 3.60, "tipo_veiculo": "ÔNIBUS", "servico": "FRETAMENTO", "custo": 1024.28, "status": "BOA", "usuario_id": 17, "garagem_origem_id": 4 }],
+        garagens: [{ "nome": "GARAGEM CONTAGEM", "cidade": "CONTAGEM - MG" }],
+        usuarios: [{ "nome": "JOAO DA SILVA", "cpf": "123.456.789-00", "funcao": "MOTORISTA", "servico": "FRETAMENTO", "garagem_id": 4 }],
+        veiculos: [{ "prefixo": "54004", "placa": "ABC-1234", "modelo": "MERCEDES OF-1721", "tipo": "MICRO", "servico": "FRETAMENTO", "garagem_id": 4 }]
+      };
+      const ws = XLSX.utils.json_to_sheet(modelos[tabela] || []);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, tabela.toUpperCase());
+      XLSX.writeFile(wb, `modelo_${tabela}_mactur.xlsx`);
+    }
+
+    async function importarExcel(event, tabela) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          let rows = XLSX.utils.sheet_to_json(worksheet);
+
+          if (rows.length === 0) { alert("O ficheiro Excel está vazio."); return; }
+
+          const { error } = await supabaseClient.from(tabela).insert(rows);
+          if (error) {
+            alert("Erro ao importar dados: " + error.message);
+          } else {
+            alert(`Importação de ${rows.length} registros concluída com sucesso!`);
+            carregarDados();
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao processar ficheiro.");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      event.target.value = '';
+    }
+
+    function mudarAba(aba) {
+      abaAtual = aba;
+      document.querySelectorAll('.menu li').forEach(li => li.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+      const navEl = document.getElementById(`nav-${aba}`);
+      const tabEl = document.getElementById(`tab-${aba}`);
+      if (navEl) navEl.classList.add('active');
+      if (tabEl) tabEl.classList.add('active');
+
+      carregarDados();
+    }
+
+    async function carregarDadosGeralCache() {
+      const [resV, resU, resG, resA] = await Promise.all([
+        supabaseClient.from('veiculos').select('*'),
+        supabaseClient.from('usuarios').select('*'),
+        supabaseClient.from('garagens').select('*'),
+        buscarTodosRegistros('abastecimentos')
+      ]);
+
+      let veiculos = resV.data || [];
+      let usuarios = resU.data || [];
+      let garagens = resG.data || [];
+      let abastecimentos = resA.data || [];
+
+      if (usuarioLogado) {
+        const f = (usuarioLogado.funcao || '').toUpperCase();
+        const gId = usuarioLogado.garagem_id;
+        const isGlobal = ['DESENVOLVEDOR', 'DIRETORIA'].includes(f);
+
+        if (!isGlobal && gId) {
+          garagens = garagens.filter(g => String(g.id) === String(gId));
+          veiculos = veiculos.filter(v => String(v.garagem_id) === String(gId));
+          usuarios = usuarios.filter(u => String(u.garagem_id) === String(gId) || String(u.id) === String(usuarioLogado.id));
+          abastecimentos = abastecimentos.filter(a => String(a.garagem_origem_id) === String(gId));
+        }
+      }
+
+      cacheDadosGlobais.veiculos = veiculos;
+      cacheDadosGlobais.usuarios = usuarios;
+      cacheDadosGlobais.garagens = garagens;
+      rawAbastecimentos = abastecimentos;
+    }
+
+    async function carregarDados() {
+      if (!usuarioLogado) return;
+      await carregarDadosGeralCache();
+
+      if (abaAtual === 'dashboard') carregarDashboardGeral();
+      if (abaAtual === 'garagens') carregarGaragensTabela();
+      if (abaAtual === 'usuarios') carregarUsuariosTabela();
+      if (abaAtual === 'veiculos') carregarVeiculosTabela();
+      if (abaAtual === 'abastecimentos') {
+        popularFiltroGaragens();
+        atualizarSubfiltrosGaragem();
+        aplicarFiltrosLocais();
+      }
+    }
+
+    async function carregarGaragensTabela() {
+      const tbody = document.getElementById('tabelaGaragens');
+      tbody.innerHTML = '';
+      const podeEditar = usuarioLogado && usuarioLogado.funcao.toUpperCase() === 'DESENVOLVEDOR';
+
+      cacheDadosGlobais.garagens.forEach(g => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${g.id}</td>
+            <td><strong>${g.nome}</strong></td>
+            <td>${g.cidade || ''}</td>
+            <td>${podeEditar ? `<button class="btn btn-edit" onclick='abrirModalGaragem(${JSON.stringify(g)})'><i class="fa-solid fa-pen"></i> Editar</button>` : '<span style="color:#718096; font-size:0.8rem;">Visualização</span>'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    async function carregarUsuariosTabela() {
+      const tbody = document.getElementById('tabelaUsuarios');
+      tbody.innerHTML = '';
+      const podeEditar = usuarioLogado && ['ADMINISTRADOR', 'ADM', 'DESENVOLVEDOR'].includes(usuarioLogado.funcao.toUpperCase());
+
+      cacheDadosGlobais.usuarios.forEach(u => {
+        const gObj = cacheDadosGlobais.garagens.find(g => g.id === u.garagem_id);
+        tbody.innerHTML += `
+          <tr>
+            <td>${u.id}</td>
+            <td><strong>${u.nome}</strong></td>
+            <td>${u.cpf || u.cnh || ''}</td>
+            <td>${u.funcao || 'MOTORISTA'}</td>
+            <td>${u.servico || 'FRETAMENTO'}</td>
+            <td>${gObj ? gObj.nome : 'N/A'}</td>
+            <td><span style="padding: 3px 8px; border-radius: 4px; background: #d1fae5; color: #065f46; font-weight:700;">ATIVO</span></td>
+            <td>${podeEditar ? `<button class="btn btn-edit" onclick='abrirModalUsuario(${JSON.stringify(u)})'><i class="fa-solid fa-pen"></i> Editar</button>` : '<span style="color:#718096; font-size:0.8rem;">Somente Leitura</span>'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    async function carregarVeiculosTabela() {
+      const tbody = document.getElementById('tabelaVeiculos');
+      tbody.innerHTML = '';
+      const podeEditar = usuarioLogado && ['ADMINISTRADOR', 'ADM', 'DESENVOLVEDOR'].includes(usuarioLogado.funcao.toUpperCase());
+
+      cacheDadosGlobais.veiculos.forEach(v => {
+        const gObj = cacheDadosGlobais.garagens.find(g => g.id === v.garagem_id);
+        tbody.innerHTML += `
+          <tr>
+            <td>${v.id}</td>
+            <td><strong>${v.prefixo}</strong></td>
+            <td>${v.placa || ''}</td>
+            <td>${v.modelo || ''}</td>
+            <td>${v.tipo || ''}</td>
+            <td>${v.servico || ''}</td>
+            <td>${gObj ? gObj.nome : 'N/A'}</td>
+            <td>${podeEditar ? `<button class="btn btn-edit" onclick='abrirModalVeiculo(${JSON.stringify(v)})'><i class="fa-solid fa-pen"></i> Editar</button>` : '<span style="color:#718096; font-size:0.8rem;">Somente Leitura</span>'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    async function buscarTodosRegistros(tabela) {
+      let todos = [];
+      let doOffset = 0;
+      let limite = 1000;
+      let continuar = true;
+
+      while (continuar) {
+        const { data, error } = await supabaseClient
+          .from(tabela)
+          .select('*')
+          .range(doOffset, doOffset + limite - 1);
+
+        if (error) { console.error(`Erro na busca de ${tabela}:`, error); break; }
+
+        if (data && data.length > 0) {
+          todos = todos.concat(data);
+          doOffset += limite;
+          if (data.length < limite) continuar = false;
+        } else {
+          continuar = false;
+        }
+      }
+      return todos;
+    }
+
+    function popularFiltroGaragens() {
+      const selGaragem = document.getElementById('filterGaragem');
+      selGaragem.innerHTML = '<option value="TODOS">Todas as Garagens</option>';
+      cacheDadosGlobais.garagens.forEach(g => {
+        selGaragem.innerHTML += `<option value="${g.id}">${g.nome}</option>`;
+      });
+    }
+
+    function aoMudarGaragem() {
+      atualizarSubfiltrosGaragem();
+      aplicarFiltrosLocais();
+    }
+
+    function atualizarSubfiltrosGaragem() {
+      const garagemSelecionadaId = document.getElementById('filterGaragem').value;
+      const selPrefixo = document.getElementById('filterPrefixo');
+      const selMotorista = document.getElementById('filterMotorista');
+      const selTipoV = document.getElementById('filterTipoVeiculo');
+      const selServico = document.getElementById('filterServico');
+      const selStatus = document.getElementById('filterStatus');
+
+      const prefixos = new Set();
+      const motoristas = new Set();
+      const tiposV = new Set();
+      const servicos = new Set();
+      const statusSet = new Set();
+
+      rawAbastecimentos.forEach(r => {
+        const v = cacheDadosGlobais.veiculos.find(ve => ve.id === r.veiculo_id);
+        const u = cacheDadosGlobais.usuarios.find(us => us.id === r.motorista_id);
+        const prefText = v ? v.prefixo : '';
+        const motText = u ? u.nome : '';
+
+        const servicoVeiculoStr = (v && v.servico ? v.servico : (r.servico || '')).toLowerCase();
+        const servicoUsuarioStr = (u && u.servico ? u.servico : '').toLowerCase();
+        const ehRodoviario = servicoVeiculoStr.includes('rodoviario') || servicoVeiculoStr.includes('rodoviário') ||
+                             servicoUsuarioStr.includes('rodoviario') || servicoUsuarioStr.includes('rodoviário');
+
+        const pertenceAGaragem = (garagemSelecionadaId === 'TODOS') || 
+                                 (String(r.garagem_origem_id) === String(garagemSelecionadaId)) || 
+                                 ehRodoviario;
+
+        if (pertenceAGaragem) {
+          if (prefText) prefixos.add(prefText);
+          if (motText) motoristas.add(motText);
+          if (r.tipo_veiculo) tiposV.add(r.tipo_veiculo.trim().toUpperCase());
+          if (r.servico) servicos.add(r.servico.trim().toUpperCase());
+          if (r.status) statusSet.add(r.status.trim().toUpperCase());
+        }
+      });
+
+      preencherSelect(selPrefixo, prefixos, 'Todos os Veículos');
+      preencherSelect(selMotorista, motoristas, 'Todos os Motoristas');
+      preencherSelect(selTipoV, tiposV, 'Todos os Tipos');
+      preencherSelect(selServico, servicos, 'Todos os Serviços');
+      preencherSelect(selStatus, statusSet, 'Todos os Status');
+    }
+
+    function preencherSelect(elem, conjunto, labelPadrao) {
+      const valAtual = elem.value;
+      elem.innerHTML = `<option value="TODOS">${labelPadrao}</option>`;
+      Array.from(conjunto).sort().forEach(item => {
+        elem.innerHTML += `<option value="${item}">${item}</option>`;
+      });
+      if (Array.from(conjunto).includes(valAtual)) elem.value = valAtual;
+      else elem.value = 'TODOS';
+    }
+
+    function filtrarMes(mes, btn) {
+      mesSelecionado = mes;
+      document.querySelectorAll('.btn-month').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      aplicarFiltrosLocais();
+    }
+
+    function aplicarFiltrosLocais() {
+      const gId = document.getElementById('filterGaragem').value;
+      const pref = document.getElementById('filterPrefixo').value;
+      const mot = document.getElementById('filterMotorista').value;
+      const tipoV = document.getElementById('filterTipoVeiculo').value;
+      const serv = document.getElementById('filterServico').value;
+      const st = document.getElementById('filterStatus').value;
+
+      const filtrados = rawAbastecimentos.filter(r => {
+        const v = cacheDadosGlobais.veiculos.find(ve => ve.id === r.veiculo_id);
+        const u = cacheDadosGlobais.usuarios.find(us => us.id === r.motorista_id);
+        const prefText = v ? v.prefixo : '';
+        const motText = u ? u.nome : '';
+
+        const servicoVeiculoStr = (v && v.servico ? v.servico : (r.servico || '')).toLowerCase();
+        const servicoUsuarioStr = (u && u.servico ? u.servico : '').toLowerCase();
+        const ehRodoviario = servicoVeiculoStr.includes('rodoviario') || servicoVeiculoStr.includes('rodoviário') ||
+                             servicoUsuarioStr.includes('rodoviario') || servicoUsuarioStr.includes('rodoviário');
+
+        const matchG = gId === 'TODOS' || String(r.garagem_origem_id) === String(gId) || ehRodoviario;
+        const matchPref = pref === 'TODOS' || (prefText === pref);
+        const matchMot = mot === 'TODOS' || (motText === mot);
+        const matchTipo = tipoV === 'TODOS' || (r.tipo_veiculo && r.tipo_veiculo.toUpperCase() === tipoV);
+        const matchServ = serv === 'TODOS' || (r.servico && r.servico.toUpperCase() === serv);
+        const matchSt = st === 'TODOS' || (r.status && r.status.toUpperCase() === st);
+
+        let matchMes = true;
+        if (mesSelecionado !== 'TODOS' && r.data_hora) {
+          const d = new Date(r.data_hora);
+          if (!isNaN(d.getTime())) {
+            const mStr = String(d.getMonth() + 1).padStart(2, '0');
+            matchMes = (mStr === mesSelecionado);
+          }
+        }
+        return matchG && matchPref && matchMot && matchTipo && matchServ && matchSt && matchMes;
+      });
+
+      filtrados.sort((a, b) => b.id - a.id);
+
+      let totalLitros = 0, valorTotal = 0, somaMedia = 0, qtdMediasValidas = 0;
+      filtrados.forEach(r => {
+        const lit = parseFloat(r.litros) || 0;
+        const cust = parseFloat(r.custo) || 0;
+        const med = parseFloat(r.media) || 0;
+        totalLitros += lit;
+        valorTotal += cust;
+        if (med > 0) { somaMedia += med; qtdMediasValidas++; }
+      });
+
+      const mediaKmL = qtdMediasValidas > 0 ? (somaMedia / qtdMediasValidas).toFixed(2) : '0.00';
+      const valorMedioDiesel = totalLitros > 0 ? (valorTotal / totalLitros).toFixed(2) : '0.00';
+
+      document.getElementById('kpiTotalLitros').innerText = `${Math.round(totalLitros).toLocaleString('pt-BR')} L`;
+      document.getElementById('kpiQtdAbastecimentos').innerText = filtrados.length;
+      document.getElementById('kpiValorTotal').innerText = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('kpiKmL').innerText = `${mediaKmL} KM/L`;
+      document.getElementById('kpiValorMedioDiesel').innerText = `R$ ${valorMedioDiesel} / L`;
+
+      const tbody = document.getElementById('tabelaAbastecimentos');
+      tbody.innerHTML = '';
+      if (filtrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;">Nenhum registro encontrado.</td></tr>`;
+      } else {
+        filtrados.slice(0, 100).forEach(a => {
+          let dataFmt = 'N/A';
+          if (a.data_hora) {
+            const d = new Date(a.data_hora);
+            if (!isNaN(d.getTime())) dataFmt = d.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+          }
+
+          const motObj = cacheDadosGlobais.usuarios.find(u => u.id === a.motorista_id);
+          const motTxt = motObj ? `${a.motorista_id} - ${motObj.nome}` : (a.motorista_id ? `${a.motorista_id}` : 'N/A');
+          const veiObj = cacheDadosGlobais.veiculos.find(v => v.id === a.veiculo_id);
+          const veiTxt = veiObj ? veiObj.prefixo : (a.veiculo_id || 'N/A');
+          const garObj = cacheDadosGlobais.garagens.find(g => g.id === a.garagem_origem_id);
+          const garTxt = garObj ? garObj.nome : (a.garagem_origem_id || 'N/A');
+
+          tbody.innerHTML += `
+            <tr>
+              <td>${a.id}</td>
+              <td>${dataFmt}</td>
+              <td><strong>${motTxt}</strong></td>
+              <td><strong>${veiTxt}</strong></td>
+              <td>${a.km_atual || ''}</td>
+              <td>${parseFloat(a.litros || 0).toFixed(1)}</td>
+              <td><strong>${parseFloat(a.media || 0).toFixed(2)}</strong></td>
+              <td>${a.tipo_veiculo || ''}</td>
+              <td>${a.servico || ''}</td>
+              <td>R$ ${parseFloat(a.custo || 0).toFixed(2)}</td>
+              <td><span style="padding: 3px 8px; border-radius: 4px; background: ${a.status === 'BAIXA' ? '#fee2e2' : '#d1fae5'}; color: ${a.status === 'BAIXA' ? '#991b1b' : '#065f46'}; font-weight:700;">${a.status || 'BOA'}</span></td>
+              <td>${a.usuario_id || ''}</td>
+              <td>${garTxt}</td>
+            </tr>
+          `;
+        });
+      }
+
+      atualizarGraficosAbastecimento(filtrados);
+    }
+
+    function initCharts() {
+      const noGrid = { x: { grid: { display: false } }, y: { grid: { display: false } } };
+
+      chartEvolucaoMensal = new Chart(document.getElementById('chartEvolucaoMensal'), {
+        type: 'bar',
+        data: { labels: [], datasets: [
+          { label: 'Fretamento', data: [], backgroundColor: '#008037', borderRadius: 4 },
+          { label: 'Rodoviário', data: [], backgroundColor: '#f1c40f', borderRadius: 4 }
+        ]},
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { datalabels: { display: true, anchor: 'end', align: 'top', formatter: (v) => v > 0 ? `${Math.round(v).toLocaleString('pt-BR')} L` : '' } },
+          scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { display: false } } }
+        }
+      });
+
+      chartEvolucaoCustoMensal = new Chart(document.getElementById('chartEvolucaoCustoMensal'), {
+        type: 'bar',
+        data: { labels: [], datasets: [
+          { label: 'Fretamento', data: [], backgroundColor: '#008037', borderRadius: 4 },
+          { label: 'Rodoviário', data: [], backgroundColor: '#f1c40f', borderRadius: 4 }
+        ]},
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { datalabels: { display: true, anchor: 'end', align: 'top', formatter: (v) => v > 0 ? `R$ ${Math.round(v).toLocaleString('pt-BR')}` : '' } },
+          scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { display: false } } }
+        }
+      });
+
+      chartEvolucaoCustoTotal = new Chart(document.getElementById('chartEvolucaoCustoTotal'), {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Custo Total (R$)', data: [], backgroundColor: '#1e3a8a', borderRadius: 4 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { datalabels: { display: true, anchor: 'end', align: 'top', formatter: (v) => v > 0 ? `R$ ${Math.round(v).toLocaleString('pt-BR')}` : '' } },
+          scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { display: false } } }
+        }
+      });
+
+      chartTipoServico = new Chart(document.getElementById('chartTipoServico'), {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Litros', data: [], backgroundColor: '#f1c40f', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { datalabels: { display: true, anchor: 'end', align: 'end', formatter: (v) => `${Math.round(v).toLocaleString('pt-BR')} L` } }, scales: noGrid }
+      });
+
+      chartTipoVeiculo = new Chart(document.getElementById('chartTipoVeiculo'), {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Total Litros', data: [], backgroundColor: '#008037', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { datalabels: { display: true, anchor: 'end', align: 'end', formatter: (v) => `${Math.round(v).toLocaleString('pt-BR')} L` } }, scales: noGrid }
+      });
+
+      chartStatus = new Chart(document.getElementById('chartStatus'), {
+        type: 'pie',
+        data: { labels: [], datasets: [{ data: [], backgroundColor: ['#e74c3c', '#008037'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, color: '#fff', font: { weight: 'bold' } } } }
+      });
+
+      chartConsumoCarro = new Chart(document.getElementById('chartConsumoCarro'), {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Total Litros', data: [], backgroundColor: '#f1c40f', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: true, anchor: 'end', align: 'top', formatter: (v) => `${Math.round(v).toLocaleString('pt-BR')} L` } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { display: false } } } }
+      });
+
+      chartMotoristas = new Chart(document.getElementById('chartMotoristas'), {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Litros', data: [], backgroundColor: '#1e3a8a', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { datalabels: { display: true, anchor: 'end', align: 'end', formatter: (v) => `${Math.round(v).toLocaleString('pt-BR')} L` } }, scales: noGrid }
+      });
+    }
+
+    function atualizarGraficosAbastecimento(dados) {
+      const mesesKeys = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+      const mesesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      
+      const mapLitrosFret = {}, mapLitrosRodo = {}, mapCustoFret = {}, mapCustoRodo = {}, mapCustoTotal = {};
+      mesesKeys.forEach(m => {
+        mapLitrosFret[m] = 0; mapLitrosRodo[m] = 0; mapCustoFret[m] = 0; mapCustoRodo[m] = 0; mapCustoTotal[m] = 0;
+      });
+
+      const mapServico = {}, mapTipoV = {}, mapStatus = {}, mapCarro = {}, mapMot = {};
+
+      dados.forEach(r => {
+        const lit = parseFloat(r.litros) || 0;
+        const cust = parseFloat(r.custo) || 0;
+        const servUpper = String(r.servico || '').toUpperCase();
+        const tipoVUpper = String(r.tipo_veiculo || 'NÃO INFORMADO').toUpperCase();
+        const statusUpper = String(r.status || 'BOA').toUpperCase();
+
+        if (r.data_hora) {
+          const d = new Date(r.data_hora);
+          if (!isNaN(d.getTime())) {
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            if (mapLitrosFret[m] !== undefined) {
+              mapCustoTotal[m] += cust;
+              if (servUpper.includes('FRET')) {
+                mapLitrosFret[m] += lit;
+                mapCustoFret[m] += cust;
+              } else {
+                mapLitrosRodo[m] += lit;
+                mapCustoRodo[m] += cust;
+              }
+            }
+          }
+        }
+
+        mapServico[r.servico || 'OUTROS'] = (mapServico[r.servico || 'OUTROS'] || 0) + lit;
+        mapTipoV[tipoVUpper] = (mapTipoV[tipoVUpper] || 0) + lit;
+        mapStatus[statusUpper] = (mapStatus[statusUpper] || 0) + 1;
+
+        const veiObj = cacheDadosGlobais.veiculos.find(v => v.id === r.veiculo_id);
+        const veiLabel = veiObj ? veiObj.prefixo : (r.veiculo_id || 'N/D');
+        mapCarro[veiLabel] = (mapCarro[veiLabel] || 0) + lit;
+
+        const motObj = cacheDadosGlobais.usuarios.find(u => u.id === r.motorista_id);
+        const motLabel = motObj ? motObj.nome : (r.motorista_id ? `ID ${r.motorista_id}` : 'N/D');
+        mapMot[motLabel] = (mapMot[motLabel] || 0) + lit;
+      });
+
+      chartEvolucaoMensal.data.labels = mesesLabels;
+      chartEvolucaoMensal.data.datasets[0].data = mesesKeys.map(m => mapLitrosFret[m]);
+      chartEvolucaoMensal.data.datasets[1].data = mesesKeys.map(m => mapLitrosRodo[m]);
+      chartEvolucaoMensal.update();
+
+      chartEvolucaoCustoMensal.data.labels = mesesLabels;
+      chartEvolucaoCustoMensal.data.datasets[0].data = mesesKeys.map(m => mapCustoFret[m]);
+      chartEvolucaoCustoMensal.data.datasets[1].data = mesesKeys.map(m => mapCustoRodo[m]);
+      chartEvolucaoCustoMensal.update();
+
+      chartEvolucaoCustoTotal.data.labels = mesesLabels;
+      chartEvolucaoCustoTotal.data.datasets[0].data = mesesKeys.map(m => mapCustoTotal[m]);
+      chartEvolucaoCustoTotal.update();
+
+      const sortedServico = Object.entries(mapServico).sort((a,b) => b[1] - a[1]);
+      chartTipoServico.data.labels = sortedServico.map(i => i[0]);
+      chartTipoServico.data.datasets[0].data = sortedServico.map(i => i[1]);
+      chartTipoServico.update();
+
+      const sortedTipoV = Object.entries(mapTipoV).sort((a,b) => b[1] - a[1]);
+      chartTipoVeiculo.data.labels = sortedTipoV.map(i => i[0]);
+      chartTipoVeiculo.data.datasets[0].data = sortedTipoV.map(i => i[1]);
+      chartTipoVeiculo.update();
+
+      const sortedStatus = Object.entries(mapStatus).sort((a,b) => b[1] - a[1]);
+      chartStatus.data.labels = sortedStatus.map(i => i[0]);
+      chartStatus.data.datasets[0].data = sortedStatus.map(i => i[1]);
+      chartStatus.update();
+
+      const sortedCarros = Object.entries(mapCarro).sort((a,b) => b[1] - a[1]).slice(0, 10);
+      chartConsumoCarro.data.labels = sortedCarros.map(i => i[0]);
+      chartConsumoCarro.data.datasets[0].data = sortedCarros.map(i => i[1]);
+      chartConsumoCarro.update();
+
+      const sortedMot = Object.entries(mapMot).sort((a,b) => b[1] - a[1]).slice(0, 10);
+      chartMotoristas.data.labels = sortedMot.map(i => i[0]);
+      chartMotoristas.data.datasets[0].data = sortedMot.map(i => i[1]);
+      chartMotoristas.update();
+    }
+
+    async function carregarDashboardGeral() {
+      document.getElementById('statTotalVeiculos').innerText = cacheDadosGlobais.veiculos.length;
+      document.getElementById('statTotalMotoristas').innerText = cacheDadosGlobais.usuarios.length;
+      document.getElementById('statTotalGaragens').innerText = cacheDadosGlobais.garagens.length;
+      document.getElementById('statTotalAbastGeral').innerText = rawAbastecimentos.length;
+
+      const gridG = document.getElementById('gridGaragensDashboard');
+      gridG.innerHTML = '';
+
+      if (cacheDadosGlobais.garagens.length === 0) {
+        gridG.innerHTML = `<p style="text-align:center; grid-column: span 3; color: var(--text-muted);">Nenhuma garagem encontrada para exibição.</p>`;
+        return;
+      }
+
+      const mesAtualStr = String(new Date().getMonth() + 1).padStart(2, '0');
+      const capacidadeTanquePadrao = 15000;
+
+      cacheDadosGlobais.garagens.forEach(g => {
+        const qtdVeiculos = cacheDadosGlobais.veiculos.filter(v => String(v.garagem_id) === String(g.id)).length;
+        const qtdMotoristas = cacheDadosGlobais.usuarios.filter(u => String(u.garagem_id) === String(g.id)).length;
+
+        const abastecimentosMes = rawAbastecimentos.filter(r => {
+          if (!r.data_hora) return false;
+          const d = new Date(r.data_hora);
+          if (isNaN(d.getTime())) return false;
+          const mStr = String(d.getMonth() + 1).padStart(2, '0');
+          return (mStr === mesAtualStr) && (String(r.garagem_origem_id) === String(g.id));
+        });
+
+        let litrosMes = 0;
+        abastecimentosMes.forEach(r => { litrosMes += parseFloat(r.litros) || 0; });
+
+        const litrosRestantes = Math.max(0, capacidadeTanquePadrao - litrosMes);
+        const percentual = Math.min(100, Math.max(0, (litrosRestantes / capacidadeTanquePadrao) * 100)).toFixed(1);
+
+        gridG.innerHTML += `
+          <div class="garagem-card">
+            <h3><i class="fa-solid fa-warehouse"></i> ${g.nome}</h3>
+            
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:900; color:var(--text-muted);">
+                <span>TANQUE VIRTUAL (${capacidadeTanquePadrao.toLocaleString('pt-BR')} L)</span>
+                <span style="color:var(--mactur-green);">${percentual}% DISPONÍVEL</span>
+              </div>
+              <div class="tanque-container">
+                <div class="tanque-nivel" style="width: ${percentual}%;"></div>
+                <div class="tanque-texto">${litrosRestantes.toLocaleString('pt-BR', {maximumFractionDigits:1})} L Restantes</div>
+              </div>
+            </div>
+
+            <div class="garagem-info-row">
+              <div class="garagem-info-box">
+                <span>Litros no Mês</span>
+                <strong>${Math.round(litrosMes).toLocaleString('pt-BR')} L</strong>
+              </div>
+              <div class="garagem-info-box">
+                <span>Abastecimentos (Mês)</span>
+                <strong>${abastecimentosMes.length}</strong>
+              </div>
+            </div>
+
+            <div class="garagem-info-row">
+              <div class="garagem-info-box">
+                <span>Veículos Vinculados</span>
+                <strong><i class="fa-solid fa-bus" style="color:var(--mactur-green);"></i> ${qtdVeiculos}</strong>
+              </div>
+              <div class="garagem-info-box">
+                <span>Motoristas Vinculados</span>
+                <strong><i class="fa-solid fa-users" style="color:var(--info-blue);"></i> ${qtdMotoristas}</strong>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    window.onload = () => {
+      initCharts();
+      const savedUser = localStorage.getItem('mactur_user');
+      if (savedUser) {
+        try {
+          usuarioLogado = JSON.parse(savedUser);
+          document.getElementById('loginScreen').style.display = 'none';
+          aplicarPermissoesUsuario();
+          mudarAba('dashboard');
+        } catch(e) {
+          localStorage.removeItem('mactur_user');
+        }
+      }
+    };
+  </script>
 </body>
 </html>
