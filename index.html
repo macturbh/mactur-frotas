@@ -95,6 +95,10 @@
       cursor: pointer;
     }
 
+    .login-card button:hover {
+      background: var(--mactur-green-dark);
+    }
+
     aside {
       width: 260px;
       background: var(--mactur-green);
@@ -171,6 +175,22 @@
       display: flex;
       align-items: center;
       gap: 15px;
+    }
+
+    /* Estilo adicionado para organizar o nome e a função abaixo dele */
+    .user-info-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      line-height: 1.2;
+    }
+
+    .user-role-display {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--mactur-green-dark);
+      text-transform: uppercase;
+      margin-top: 2px;
     }
 
     .btn-logout {
@@ -346,10 +366,11 @@
       border-radius: 8px;
       font-weight: 700;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
       font-size: 0.85rem;
+      transition: background 0.2s;
     }
 
     .btn:hover {
@@ -360,6 +381,24 @@
       background: #e2e8f0;
       color: #475569;
     }
+
+    .btn-edit {
+      background: #3182ce;
+      color: white;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+    }
+    .btn-edit:hover { background: #2b6cb0; }
+
+    .btn-delete {
+      background: #e53e3e;
+      color: white;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+    }
+    .btn-delete:hover { background: #c53030; }
 
     .table-responsive {
       width: 100%;
@@ -404,13 +443,8 @@
       flex-direction: column;
     }
 
-    .col-6 {
-      grid-column: span 6;
-    }
-
-    .col-3 {
-      grid-column: span 3;
-    }
+    .col-6 { grid-column: span 6; }
+    .col-3 { grid-column: span 3; }
 
     .chart-card h3 {
       font-size: 1rem;
@@ -428,24 +462,112 @@
       width: 100%;
     }
 
-    .tab-content {
-      display: none;
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .dev-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      border: 2px dashed var(--mactur-yellow);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
 
-    .tab-content.active {
-      display: block;
+    .dev-container i {
+      font-size: 5rem;
+      color: var(--mactur-yellow);
+      margin-bottom: 20px;
+    }
+
+    .dev-container h2 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--mactur-green-dark);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .dev-container p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      max-width: 500px;
+    }
+
+    /* MODAIS */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .modal-card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border-top: 5px solid var(--mactur-green);
+    }
+
+    .modal-card h3 {
+      font-size: 1.2rem;
+      color: var(--mactur-green-dark);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      font-weight: 600;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
     }
 
     @media (max-width: 950px) {
-      .filters-row {
-        grid-template-columns: 1fr;
-      }
+      .filters-row { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 850px) {
-      body {
-        flex-direction: column;
-      }
+      body { flex-direction: column; }
       aside {
         width: 100%;
         border-right: none;
@@ -456,25 +578,15 @@
         overflow-x: auto;
         padding: 8px;
       }
-      .menu li {
-        flex-shrink: 0;
-      }
+      .menu li { flex-shrink: 0; }
       .menu li a {
         padding: 10px;
         font-size: 0.8rem;
       }
-      .container {
-        padding: 15px;
-      }
-      header {
-        padding: 15px;
-      }
-      .charts-grid-6 {
-        grid-template-columns: 1fr;
-      }
-      .col-6, .col-3 {
-        grid-column: span 1;
-      }
+      .container { padding: 15px; }
+      header { padding: 15px; }
+      .charts-grid-6 { grid-template-columns: 1fr; }
+      .col-6, .col-3 { grid-column: span 1; }
     }
   </style>
 </head>
@@ -489,15 +601,15 @@
         Mactur Login
       </h2>
       <div id="loginError" style="color:#e53e3e;font-size:0.85rem;font-weight:700;text-align:center;display:none;"></div>
-      <div class="filter-group" style="display:flex;flex-direction:column;gap:5px;">
-        <label style="font-size:0.8rem;font-weight:700;">Usuário (Nome ou CPF)</label>
-        <input type="text" id="loginUsuario" placeholder="Digite seu nome ou CPF">
+      <div class="form-group">
+        <label>Usuário (Nome ou CPF)</label>
+        <input type="text" id="loginUsuario" placeholder="Digite seu nome ou CPF" onkeydown="if(event.key==='Enter') realizarLogin()">
       </div>
-      <div class="filter-group" style="display:flex;flex-direction:column;gap:5px;">
-        <label style="font-size:0.8rem;font-weight:700;">Senha / CPF</label>
-        <input type="password" id="loginSenha" placeholder="Digite sua senha ou CPF">
+      <div class="form-group">
+        <label>Senha / CPF</label>
+        <input type="password" id="loginSenha" placeholder="Digite sua senha ou CPF" onkeydown="if(event.key==='Enter') realizarLogin()">
       </div>
-      <button onclick="realizarLogin()">Entrar no Painel</button>
+      <button id="btnLoginSubmit" onclick="realizarLogin()">Entrar no Painel</button>
     </div>
   </div>
 
@@ -522,6 +634,12 @@
       </li>
       <li id="nav-abastecimentos" onclick="mudarAba('abastecimentos')">
         <a href="javascript:void(0)"><i class="fa-solid fa-gas-pump"></i> Abastecimentos</a>
+      </li>
+      <li id="nav-manutencao" onclick="mudarAba('manutencao')">
+        <a href="javascript:void(0)"><i class="fa-solid fa-screwdriver-wrench"></i> Manutenção</a>
+      </li>
+      <li id="nav-ponto" onclick="mudarAba('ponto')">
+        <a href="javascript:void(0)"><i class="fa-solid fa-business-time"></i> Registro de Ponto</a>
       </li>
       <li id="nav-auditoria" onclick="mudarAba('auditoria')">
         <a href="javascript:void(0)"><i class="fa-solid fa-shield-halved"></i> Auditoria e Acessos</a>
@@ -566,6 +684,9 @@
         <div class="card">
           <div class="card-header">
             <h3>Gestão de Veículos</h3>
+            <div class="action-toolbar">
+              <button class="btn btn-crud" onclick="abrirModalVeiculo()"><i class="fa-solid fa-plus"></i> Novo Veículo</button>
+            </div>
           </div>
           <div class="table-responsive">
             <table>
@@ -577,10 +698,11 @@
                   <th>Modelo</th>
                   <th>Tipo</th>
                   <th>Serviço</th>
+                  <th class="col-acoes">Ações</th>
                 </tr>
               </thead>
               <tbody id="tabelaVeiculos">
-                <tr><td colspan="6" style="text-align:center;">Carregando...</td></tr>
+                <tr><td colspan="7" style="text-align:center;">Carregando...</td></tr>
               </tbody>
             </table>
           </div>
@@ -592,6 +714,9 @@
         <div class="card">
           <div class="card-header">
             <h3>Gestão de Usuários</h3>
+            <div class="action-toolbar">
+              <button class="btn btn-crud" onclick="abrirModalUsuario()"><i class="fa-solid fa-user-plus"></i> Novo Usuário</button>
+            </div>
           </div>
           <div class="table-responsive">
             <table>
@@ -602,10 +727,11 @@
                   <th>CPF</th>
                   <th>Função</th>
                   <th>Serviço</th>
+                  <th class="col-acoes">Ações</th>
                 </tr>
               </thead>
               <tbody id="tabelaUsuarios">
-                <tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>
+                <tr><td colspan="6" style="text-align:center;">Carregando...</td></tr>
               </tbody>
             </table>
           </div>
@@ -617,6 +743,9 @@
         <div class="card">
           <div class="card-header">
             <h3>Gestão de Garagens</h3>
+            <div class="action-toolbar">
+              <button class="btn btn-crud" onclick="abrirModalGaragem()"><i class="fa-solid fa-plus"></i> Nova Garagem</button>
+            </div>
           </div>
           <div class="table-responsive">
             <table>
@@ -625,10 +754,11 @@
                   <th>ID</th>
                   <th>Nome</th>
                   <th>Cidade</th>
+                  <th class="col-acoes">Ações</th>
                 </tr>
               </thead>
               <tbody id="tabelaGaragens">
-                <tr><td colspan="3" style="text-align:center;">Nenhuma garagem encontrada.</td></tr>
+                <tr><td colspan="4" style="text-align:center;">Nenhuma garagem encontrada.</td></tr>
               </tbody>
             </table>
           </div>
@@ -730,86 +860,49 @@
 
         <!-- GRÁFICOS -->
         <div class="charts-grid-6">
-
-          <!-- 1. Evolução Mensal Litros -->
           <div class="chart-card col-6">
             <h3>Evolução Mensal (Litros) — Rodoviário x Fretamento</h3>
-            <div class="chart-container">
-              <canvas id="chartEvolucaoMensal"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartEvolucaoMensal"></canvas></div>
           </div>
-
-          <!-- 2. Evolução Mensal Custo Separado -->
           <div class="chart-card col-6">
             <h3>Evolução Mensal (Custo R$) — Rodoviário x Fretamento</h3>
-            <div class="chart-container">
-              <canvas id="chartEvolucaoCustoMensal"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartEvolucaoCustoMensal"></canvas></div>
           </div>
-
-          <!-- 3. Evolução Mensal Custo Consolidado -->
           <div class="chart-card col-6">
             <h3>Evolução Mensal de Custo Total (Soma Geral R$)</h3>
-            <div class="chart-container">
-              <canvas id="chartEvolucaoCustoTotal"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartEvolucaoCustoTotal"></canvas></div>
           </div>
-
-          <!-- 4. Top 10 Consumo -->
           <div class="chart-card col-3">
             <h3>Top 10 Prefixo — Maior Consumo (L)</h3>
-            <div class="chart-container">
-              <canvas id="chartTop10Consumo"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartTop10Consumo"></canvas></div>
           </div>
-
-          <!-- 5. Top 10 Custo -->
           <div class="chart-card col-3">
             <h3>Top 10 Prefixo — Maior Custo (R$)</h3>
-            <div class="chart-container">
-              <canvas id="chartTop10Custo"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartTop10Custo"></canvas></div>
           </div>
-
-          <!-- 6. KM por Garagem - Fretado -->
           <div class="chart-card col-3">
             <h3>KM Percorrido por Garagem (Fretamento)</h3>
-            <div class="chart-container">
-              <canvas id="chartKmGaragemFretado"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartKmGaragemFretado"></canvas></div>
           </div>
-
-          <!-- 7. KM por Garagem - Rodoviário -->
           <div class="chart-card col-3">
             <h3>KM Percorrido por Garagem (Rodoviário)</h3>
-            <div class="chart-container">
-              <canvas id="chartKmGaragemRodoviario"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartKmGaragemRodoviario"></canvas></div>
           </div>
-
-          <!-- 8. Média KM/L por Garagem - Fretado -->
           <div class="chart-card col-3">
             <h3>Média KM/L por Garagem (Fretamento)</h3>
-            <div class="chart-container">
-              <canvas id="chartMediaGaragemFretado"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartMediaGaragemFretado"></canvas></div>
           </div>
-
-          <!-- 9. Média KM/L por Garagem - Rodoviário -->
           <div class="chart-card col-3">
             <h3>Média KM/L por Garagem (Rodoviário)</h3>
-            <div class="chart-container">
-              <canvas id="chartMediaGaragemRodoviario"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chartMediaGaragemRodoviario"></canvas></div>
           </div>
-
         </div>
 
         <div class="card">
           <div class="card-header">
             <h3>Histórico de Abastecimentos</h3>
             <div class="action-toolbar">
-              <label class="btn btn-secondary" style="margin:0;cursor:pointer;">
+              <label class="btn btn-secondary" id="btnImportarExcel" style="margin:0;cursor:pointer;">
                 <i class="fa-solid fa-upload"></i>
                 Importar Excel
                 <input type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importarExcel(event,'abastecimentos')">
@@ -844,6 +937,24 @@
         </div>
       </div>
 
+      <!-- MANUTENÇÃO -->
+      <div id="tab-manutencao" class="tab-content">
+        <div class="dev-container">
+          <i class="fa-solid fa-helmet-safety"></i>
+          <h2>EM DESENVOLVIMENTO</h2>
+          <p>O módulo de gestão e PWA de Manutenção está sendo estruturado e estará disponível em breve.</p>
+        </div>
+      </div>
+
+      <!-- REGISTRO DE PONTO -->
+      <div id="tab-ponto" class="tab-content">
+        <div class="dev-container">
+          <i class="fa-solid fa-user-clock"></i>
+          <h2>EM DESENVOLVIMENTO</h2>
+          <p>O módulo de Registro de Ponto e PWA dos Motoristas está sendo estruturado e estará disponível em breve.</p>
+        </div>
+      </div>
+
       <!-- AUDITORIA -->
       <div id="tab-auditoria" class="tab-content">
         <div class="card">
@@ -872,6 +983,112 @@
     </div>
   </div>
 
+  <!-- MODAL VEÍCULO -->
+  <div id="modalVeiculo" class="modal-overlay">
+    <div class="modal-card">
+      <h3 id="modalVeiculoTitulo"><i class="fa-solid fa-car"></i> Veículo</h3>
+      <input type="hidden" id="veiculoIdHidden">
+      <div class="form-group">
+        <label>Prefixo *</label>
+        <input type="text" id="veiculoPrefixo" placeholder="Ex: 1500">
+      </div>
+      <div class="form-group">
+        <label>Placa *</label>
+        <input type="text" id="veiculoPlaca" placeholder="Ex: ABC1D23">
+      </div>
+      <div class="form-group">
+        <label>Modelo</label>
+        <input type="text" id="veiculoModelo" placeholder="Ex: Marcopolo Paradiso NB1">
+      </div>
+      <div class="form-group">
+        <label>Tipo de Veículo</label>
+        <select id="veiculoTipo">
+          <option value="ÔNIBUS">ÔNIBUS</option>
+          <option value="MICRO">MICRO</option>
+          <option value="MICRÃO">MICRÃO</option>
+          <option value="VAN">VAN</option>
+          <option value="CARRO">CARRO</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tipo de Serviço</label>
+        <select id="veiculoServico">
+          <option value="FRETAMENTO">FRETAMENTO</option>
+          <option value="RODOVIARIO">RODOVIARIO</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="fecharModal('modalVeiculo')">Cancelar</button>
+        <button class="btn" onclick="salvarVeiculo()">Salvar Veículo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL USUÁRIO -->
+  <div id="modalUsuario" class="modal-overlay">
+    <div class="modal-card">
+      <h3 id="modalUsuarioTitulo"><i class="fa-solid fa-user"></i> Usuário / Motorista</h3>
+      <input type="hidden" id="usuarioIdHidden">
+      <div class="form-group">
+        <label>Nome Completo *</label>
+        <input type="text" id="usuarioNome" placeholder="Digite o nome completo">
+      </div>
+      <div class="form-group">
+        <label>CPF *</label>
+        <input type="text" id="usuarioCpf" placeholder="Digite apenas os números">
+      </div>
+      <div class="form-group">
+        <label>Função / Perfil *</label>
+        <select id="usuarioFuncao">
+          <option value="MOTORISTA">Motorista</option>
+          <option value="ADM – ADMINISTRATIVO DA GARAGEM">ADM – Administrativo de Garagem</option>
+          <option value="GERENTE DE GARAGEM">Gerente de Garagem</option>
+          <option value="ABASTECEDOR">Abastecedor</option>
+          <option value="MECÂNICO">Mecânico</option>
+          <option value="GERENTE GERAL">Gerente Geral</option>
+          <option value="DIRETOR">Diretor</option>
+          <option value="DESENVOLVEDOR / ADMINISTRADOR MASTER">Desenvolvedor / Master</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Serviço Principal</label>
+        <select id="usuarioServico">
+          <option value="Fretamento">Fretamento</option>
+          <option value="Rodoviario">Rodoviario</option>
+          <option value="Administrativo">Administrativo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Senha de Acesso</label>
+        <input type="password" id="usuarioSenha" placeholder="Digite a senha (ou deixe em branco)">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="fecharModal('modalUsuario')">Cancelar</button>
+        <button class="btn" onclick="salvarUsuario()">Salvar Usuário</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GARAGEM -->
+  <div id="modalGaragem" class="modal-overlay">
+    <div class="modal-card">
+      <h3 id="modalGaragemTitulo"><i class="fa-solid fa-warehouse"></i> Garagem</h3>
+      <input type="hidden" id="garagemIdHidden">
+      <div class="form-group">
+        <label>Nome da Garagem *</label>
+        <input type="text" id="garagemNome" placeholder="Ex: GARAGEM CONTAGEM">
+      </div>
+      <div class="form-group">
+        <label>Cidade</label>
+        <input type="text" id="garagemCidade" placeholder="Ex: Contagem / MG">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="fecharModal('modalGaragem')">Cancelar</button>
+        <button class="btn" onclick="salvarGaragem()">Salvar Garagem</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     Chart.register(ChartDataLabels);
 
@@ -879,6 +1096,17 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxuaXVodHVqem9iaGZwdnNiemljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNDk2OTYsImV4cCI6MjEwNzYyNTY5Nn0.wGLx3arveAzSyNwLNmc0V3p2P3MJpo-EUZRElEq7CRQ';
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const PERFIS = {
+      MASTER: 'DESENVOLVEDOR / ADMINISTRADOR MASTER',
+      DIRETOR: 'DIRETOR',
+      GERENTE_GERAL: 'GERENTE GERAL',
+      GERENTE_GARAGEM: 'GERENTE DE GARAGEM',
+      ADM: 'ADM – ADMINISTRATIVO DA GARAGEM',
+      ABASTECEDOR: 'ABASTECEDOR',
+      MOTORISTA: 'MOTORISTA',
+      MECANICO: 'MECÂNICO'
+    };
 
     let rawAbastecimentos = [];
     let cacheDadosGlobais = { veiculos: [], usuarios: [], garagens: [] };
@@ -900,6 +1128,65 @@
     let chartMediaGaragemFretado;
     let chartMediaGaragemRodoviario;
     let chartsInitialized = false;
+
+    function removerAcentos(str) {
+      if (!str) return '';
+      return String(str).normalize('NFD').replace(/[̀-ͯ]/g, '');
+    }
+
+    function normalizarFuncao(funcaoRaw) {
+      if (!funcaoRaw) return PERFIS.MASTER;
+      const f = removerAcentos(String(funcaoRaw)).toUpperCase().trim();
+      if (f.includes('MASTER') || f.includes('DESENVOLVEDOR') || f === 'ADMIN' || f === 'ADMINISTRADOR') return PERFIS.MASTER;
+      if (f.includes('DIRETOR')) return PERFIS.DIRETOR;
+      if (f.includes('GERENTE GERAL')) return PERFIS.GERENTE_GERAL;
+      if (f.includes('GERENTE DE GARAGEM') || f.includes('GERENTE GARAGEM')) return PERFIS.GERENTE_GARAGEM;
+      if (f.includes('ADM') || f.includes('ADMINISTRATIVO')) return PERFIS.ADM;
+      if (f.includes('ABASTECEDOR')) return PERFIS.ABASTECEDOR;
+      if (f.includes('MOTORISTA')) return PERFIS.MOTORISTA;
+      if (f.includes('MECANICO')) return PERFIS.MECANICO;
+      return PERFIS.MASTER;
+    }
+
+    function ehMaster() {
+      const perfil = normalizarFuncao(usuarioLogado?.funcao);
+      return perfil === PERFIS.MASTER || perfil === PERFIS.DIRETOR || perfil === PERFIS.GERENTE_GERAL;
+    }
+
+    function podeEditarCadastros() {
+      if (!usuarioLogado) return false;
+      const perfil = normalizarFuncao(usuarioLogado.funcao);
+      return perfil === PERFIS.MASTER || perfil === PERFIS.DIRETOR || perfil === PERFIS.GERENTE_GERAL || perfil === PERFIS.GERENTE_GARAGEM || perfil === PERFIS.ADM;
+    }
+
+    function aplicarPermissoesInterface() {
+      if (!usuarioLogado) return;
+      const perfilNorm = normalizarFuncao(usuarioLogado.funcao);
+
+      const btnImport = document.getElementById('btnImportarExcel');
+      if (btnImport) {
+        btnImport.style.display = ehMaster() ? 'inline-flex' : 'none';
+      }
+
+      // EXIBIÇÃO DE BOTÕES DE INCLUIR E AÇÕES DE TABELA
+      const podeCrud = podeEditarCadastros();
+      document.querySelectorAll('.btn-crud').forEach(b => {
+        b.style.display = podeCrud ? 'inline-flex' : 'none';
+      });
+      document.querySelectorAll('.col-acoes').forEach(c => {
+        c.style.display = podeCrud ? 'table-cell' : 'none';
+      });
+
+      if (perfilNorm === PERFIS.ABASTECEDOR || perfilNorm === PERFIS.MOTORISTA || perfilNorm === PERFIS.MECANICO) {
+        alert(`O perfil (${perfilNorm}) tem acesso exclusivo ao seu respectivo PWA.`);
+        realizarLogout();
+        return;
+      }
+
+      if (!ehMaster() && usuarioLogado.garagem_id) {
+        garagemSelecionada = String(usuarioLogado.garagem_id);
+      }
+    }
 
     async function registrarAuditoria(acaoDesc) {
       if (!usuarioLogado) return;
@@ -967,6 +1254,12 @@
     }
 
     async function importarExcel(event, tabela) {
+      if (!ehMaster()) {
+        alert('Acesso negado: Apenas o Administrador Master tem permissão para importar planilhas Excel.');
+        event.target.value = '';
+        return;
+      }
+
       const file = event.target.files[0];
       if (!file) return;
 
@@ -1028,9 +1321,10 @@
     }
 
     async function realizarLogin() {
-      const userInp = document.getElementById('loginUsuario').value.trim().toLowerCase();
+      const userInp = document.getElementById('loginUsuario').value.trim();
       const passInp = document.getElementById('loginSenha').value.trim();
       const loginError = document.getElementById('loginError');
+      const btnSubmit = document.getElementById('btnLoginSubmit');
 
       loginError.style.display = 'none';
       if (!userInp || !passInp) {
@@ -1039,30 +1333,60 @@
         return;
       }
 
+      btnSubmit.innerText = 'Verificando...';
+      btnSubmit.disabled = true;
+
       try {
         const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*');
-        if (error) throw error;
+        if (error) throw new Error('Falha ao conectar com o banco de dados.');
 
-        const user = usuarios?.find(u =>
-          u.nome?.trim().toLowerCase() === userInp ||
-          u.cpf?.replace(/[^\d]/g, '') === userInp.replace(/[^\d]/g, '')
-        );
+        const userInpNorm = removerAcentos(userInp.toLowerCase());
+        const userCpfDigitos = userInp.replace(/[^\d]/g, '');
+
+        const user = usuarios?.find(u => {
+          const nomeU = u.nome ? removerAcentos(u.nome.toLowerCase().trim()) : '';
+          const cpfU = u.cpf ? u.cpf.replace(/[^\d]/g, '') : '';
+          return nomeU === userInpNorm || (userCpfDigitos && cpfU === userCpfDigitos);
+        });
 
         if (!user) {
-          loginError.innerText = 'Usuário não encontrado.';
+          loginError.innerText = 'Usuário ou CPF não encontrado no cadastro.';
           loginError.style.display = 'block';
           return;
+        }
+
+        if (user.senha && String(user.senha).trim() !== '' && String(user.senha).trim() !== passInp) {
+          const passDigits = passInp.replace(/[^\d]/g, '');
+          const cpfDigits = user.cpf ? user.cpf.replace(/[^\d]/g, '') : '';
+          if (!passDigits || passDigits !== cpfDigits) {
+            loginError.innerText = 'Senha incorreta.';
+            loginError.style.display = 'block';
+            return;
+          }
         }
 
         usuarioLogado = user;
         localStorage.setItem('mactur_user', JSON.stringify(user));
         document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('userInfoDisplay').innerHTML = `<i class="fa-solid fa-circle-user"></i> ${usuarioLogado.nome}`;
+        
+        // Atualizado para exibir o nome e a função logo abaixo no cabeçalho
+        const funcaoUsuario = usuarioLogado.funcao || 'Usuário';
+        document.getElementById('userInfoDisplay').innerHTML = `
+          <div class="user-info-text">
+            <span><i class="fa-solid fa-circle-user"></i> ${usuarioLogado.nome}</span>
+            <span class="user-role-display">${funcaoUsuario}</span>
+          </div>
+        `;
+        
+        aplicarPermissoesInterface();
         await registrarAuditoria('Realizou login no painel');
         await carregarDados();
       } catch (erro) {
-        loginError.innerText = 'Erro ao realizar login: ' + erro.message;
+        loginError.innerText = erro.message;
         loginError.style.display = 'block';
+      } finally {
+        btnSubmit.innerText = 'Entrar no Painel';
+        btnSubmit.disabled = false;
       }
     }
 
@@ -1084,6 +1408,8 @@
         usuarios: 'Gestão de Usuários',
         garagens: 'Gestão de Garagens',
         abastecimentos: 'Gestão de Abastecimentos',
+        manutencao: 'Gestão de Manutenção',
+        ponto: 'Registro de Ponto',
         auditoria: 'Auditoria e Acessos'
       };
       document.getElementById('tituloPagina').innerText = titulos[aba] || 'Mactur Admin';
@@ -1116,7 +1442,17 @@
 
     async function carregarDados() {
       if (!usuarioLogado) return;
-      document.getElementById('userInfoDisplay').innerHTML = `<i class="fa-solid fa-circle-user"></i> ${usuarioLogado.nome}`;
+      
+      // Garante que o nome e a função apareçam também se a página for recarregada mantendo a sessão
+      const funcaoUsuario = usuarioLogado.funcao || 'Usuário';
+      document.getElementById('userInfoDisplay').innerHTML = `
+        <div class="user-info-text">
+          <span><i class="fa-solid fa-circle-user"></i> ${usuarioLogado.nome}</span>
+          <span class="user-role-display">${funcaoUsuario}</span>
+        </div>
+      `;
+      
+      aplicarPermissoesInterface();
 
       try {
         const [v, u, g, a] = await Promise.all([
@@ -1135,66 +1471,118 @@
         cacheDadosGlobais.garagens = g.data || [];
         rawAbastecimentos = a;
 
-        document.getElementById('statTotalVeiculos').innerText = cacheDadosGlobais.veiculos.length;
-        document.getElementById('statTotalMotoristas').innerText = cacheDadosGlobais.usuarios.length;
-        document.getElementById('statTotalGaragens').innerText = cacheDadosGlobais.garagens.length;
+        let veiculosFiltrados = cacheDadosGlobais.veiculos;
+        let usuariosFiltrados = cacheDadosGlobais.usuarios;
+        let garagensFiltradas = cacheDadosGlobais.garagens;
+
+        if (!ehMaster() && usuarioLogado.garagem_id) {
+          const gIdStr = String(usuarioLogado.garagem_id);
+          garagensFiltradas = cacheDadosGlobais.garagens.filter(g => String(g.id) === gIdStr);
+          
+          veiculosFiltrados = cacheDadosGlobais.veiculos.filter(v => {
+            const servicoV = obterServicoVeiculo(v.id, v.tipo, v.servico);
+            if (servicoV === 'RODOVIARIO') return true;
+            return String(v.garagem_id) === gIdStr || rawAbastecimentos.some(a => String(a.veiculo_id) === String(v.id) && String(a.garagem_origem_id) === gIdStr);
+          });
+
+          usuariosFiltrados = cacheDadosGlobais.usuarios.filter(u => {
+            const servicoU = String(u.servico || '').toUpperCase();
+            if (servicoU.includes('RODO')) return true;
+            return String(u.garagem_id) === gIdStr || rawAbastecimentos.some(a => String(a.motorista_id) === String(u.id) && String(a.garagem_origem_id) === gIdStr);
+          });
+        }
+
+        document.getElementById('statTotalVeiculos').innerText = veiculosFiltrados.length;
+        document.getElementById('statTotalMotoristas').innerText = usuariosFiltrados.length;
+        document.getElementById('statTotalGaragens').innerText = garagensFiltradas.length;
 
         renderizarPillsGaragens();
         atualizarSelectsDependentes();
 
-        document.getElementById('tabelaVeiculos').innerHTML = cacheDadosGlobais.veiculos.map(x => `
+        const podeCrud = podeEditarCadastros();
+
+        document.getElementById('tabelaVeiculos').innerHTML = veiculosFiltrados.map(x => `
           <tr>
             <td>${x.id}</td>
-            <td>${x.prefixo || ''}</td>
+            <td><strong>${x.prefixo || ''}</strong></td>
             <td>${x.placa || ''}</td>
             <td>${x.modelo || ''}</td>
             <td>${x.tipo || ''}</td>
             <td>${x.servico || ''}</td>
+            ${podeCrud ? `
+              <td>
+                <button class="btn btn-edit" onclick="abrirModalVeiculo(${x.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+                <button class="btn btn-delete" onclick="excluirVeiculo(${x.id})"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            ` : ''}
           </tr>
-        `).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum veículo encontrado.</td></tr>';
+        `).join('') || '<tr><td colspan="7" style="text-align:center;">Nenhum veículo encontrado.</td></tr>';
 
-        document.getElementById('tabelaUsuarios').innerHTML = cacheDadosGlobais.usuarios.map(x => `
+        document.getElementById('tabelaUsuarios').innerHTML = usuariosFiltrados.map(x => `
           <tr>
             <td>${x.id}</td>
-            <td>${x.nome || ''}</td>
+            <td><strong>${x.nome || ''}</strong></td>
             <td>${x.cpf || ''}</td>
             <td>${x.funcao || ''}</td>
             <td>${x.servico || ''}</td>
+            ${podeCrud ? `
+              <td>
+                <button class="btn btn-edit" onclick="abrirModalUsuario(${x.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+                <button class="btn btn-delete" onclick="excluirUsuario(${x.id})"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            ` : ''}
           </tr>
-        `).join('') || '<tr><td colspan="5" style="text-align:center;">Nenhum usuário encontrado.</td></tr>';
+        `).join('') || '<tr><td colspan="6" style="text-align:center;">Nenhum usuário encontrado.</td></tr>';
 
-        document.getElementById('tabelaGaragens').innerHTML = cacheDadosGlobais.garagens.map(x => `
+        document.getElementById('tabelaGaragens').innerHTML = garagensFiltradas.map(x => `
           <tr>
             <td>${x.id}</td>
-            <td>${x.nome || ''}</td>
+            <td><strong>${x.nome || ''}</strong></td>
             <td>${x.cidade || ''}</td>
+            ${podeCrud ? `
+              <td>
+                <button class="btn btn-edit" onclick="abrirModalGaragem(${x.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+                <button class="btn btn-delete" onclick="excluirGaragem(${x.id})"><i class="fa-solid fa-trash"></i></button>
+              </td>
+            ` : ''}
           </tr>
-        `).join('') || '<tr><td colspan="3" style="text-align:center;">Nenhuma garagem encontrada.</td></tr>';
+        `).join('') || '<tr><td colspan="4" style="text-align:center;">Nenhuma garagem encontrada.</td></tr>';
 
         aplicarFiltrosLocais();
       } catch (erro) {
-        alert('Erro ao carregar dados: ' + erro.message);
+        console.error("Erro ao carregar dados:", erro);
       }
     }
 
     function renderizarPillsGaragens() {
       const container = document.getElementById('pillsGaragens');
-      let html = '<button class="btn-pill active" onclick="filtrarGaragemPill(\'TODOS\',this)">Todas as Garagens</button>';
-      cacheDadosGlobais.garagens.forEach(g => {
-        html += `<button class="btn-pill" onclick="filtrarGaragemPill('${g.id}',this)">${g.nome}</button>`;
-      });
+      let html = '';
+
+      if (ehMaster()) {
+        html += '<button class="btn-pill active" onclick="filtrarGaragemPill(\'TODOS\',this)">Todas as Garagens</button>';
+        cacheDadosGlobais.garagens.forEach(g => {
+          html += `<button class="btn-pill" onclick="filtrarGaragemPill('${g.id}',this)">${g.nome}</button>`;
+        });
+      } else if (usuarioLogado.garagem_id) {
+        const gObj = cacheDadosGlobais.garagens.find(g => String(g.id) === String(usuarioLogado.garagem_id));
+        const nomeGaragem = gObj ? gObj.nome : `Garagem ${usuarioLogado.garagem_id}`;
+        html += `<button class="btn-pill active" style="cursor:default;">${nomeGaragem}</button>`;
+      } else {
+        html += '<button class="btn-pill active" onclick="filtrarGaragemPill(\'TODOS\',this)">Todas as Garagens</button>';
+      }
+
       container.innerHTML = html;
     }
 
     function obterServicoVeiculo(veiculoId, tipoAbast, servicoAbast) {
-      const raw = String(tipoAbast || servicoAbast || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+      const raw = removerAcentos(String(tipoAbast || servicoAbast || '')).trim().toUpperCase();
       if (raw.includes('RODO')) return 'RODOVIARIO';
       if (raw.includes('FRETA')) return 'FRETAMENTO';
 
       if (veiculoId) {
         const vObj = cacheDadosGlobais.veiculos.find(v => String(v.id) === String(veiculoId));
         if (vObj) {
-          const rawV = String(vObj.servico || vObj.tipo || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+          const rawV = removerAcentos(String(vObj.servico || vObj.tipo || '')).trim().toUpperCase();
           if (rawV.includes('RODO')) return 'RODOVIARIO';
           if (rawV.includes('FRETA')) return 'FRETAMENTO';
         }
@@ -1217,9 +1605,7 @@
         const servicoV = obterServicoVeiculo(v.id, v.tipo, v.servico);
         const ehRodoviario = servicoV === 'RODOVIARIO';
 
-        // Se houver garagem selecionada, exibe veículos daquela garagem OU rodoviários
         if (garagemSelecionada !== 'TODOS') {
-          // Verifica se o veículo tem histórico ou vínculo com esta garagem ou é rodoviário
           const vinculadoGaragem = rawAbastecimentos.some(a => String(a.veiculo_id) === String(v.id) && String(a.garagem_origem_id) === String(garagemSelecionada)) || String(v.garagem_id) === String(garagemSelecionada);
           return ehRodoviario || vinculadoGaragem;
         }
@@ -1231,7 +1617,6 @@
       });
       select.innerHTML = html;
       
-      // Mantém valor selecionado se ainda existir na lista
       if ([...select.options].some(o => o.value === valorAtual)) {
         select.value = valorAtual;
       } else {
@@ -1285,6 +1670,212 @@
       }
     }
 
+    /* FUNÇÕES CRUD - MODAIS */
+    function fecharModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // VEÍCULOS
+    function abrirModalVeiculo(id = null) {
+      document.getElementById('modalVeiculo').style.display = 'flex';
+      if (id) {
+        const v = cacheDadosGlobais.veiculos.find(item => item.id === id);
+        document.getElementById('modalVeiculoTitulo').innerText = 'Editar Veículo';
+        document.getElementById('veiculoIdHidden').value = v.id;
+        document.getElementById('veiculoPrefixo').value = v.prefixo || '';
+        document.getElementById('veiculoPlaca').value = v.placa || '';
+        document.getElementById('veiculoModelo').value = v.modelo || '';
+        document.getElementById('veiculoTipo').value = v.tipo || 'ÔNIBUS';
+        document.getElementById('veiculoServico').value = v.servico || 'FRETAMENTO';
+      } else {
+        document.getElementById('modalVeiculoTitulo').innerText = 'Novo Veículo';
+        document.getElementById('veiculoIdHidden').value = '';
+        document.getElementById('veiculoPrefixo').value = '';
+        document.getElementById('veiculoPlaca').value = '';
+        document.getElementById('veiculoModelo').value = '';
+        document.getElementById('veiculoTipo').value = 'ÔNIBUS';
+        document.getElementById('veiculoServico').value = 'FRETAMENTO';
+      }
+    }
+
+    async function salvarVeiculo() {
+      const id = document.getElementById('veiculoIdHidden').value;
+      const prefixo = document.getElementById('veiculoPrefixo').value.trim();
+      const placa = document.getElementById('veiculoPlaca').value.trim();
+      const modelo = document.getElementById('veiculoModelo').value.trim();
+      const tipo = document.getElementById('veiculoTipo').value;
+      const servico = document.getElementById('veiculoServico').value;
+
+      if (!prefixo || !placa) {
+        alert('Prefixo e Placa são obrigatórios.');
+        return;
+      }
+
+      const payload = {
+        prefixo, placa, modelo, tipo, servico,
+        garagem_id: (!ehMaster() && usuarioLogado.garagem_id) ? usuarioLogado.garagem_id : null
+      };
+
+      try {
+        if (id) {
+          const { error } = await supabaseClient.from('veiculos').update(payload).eq('id', id);
+          if (error) throw error;
+          await registrarAuditoria(`Atualizou o veículo prefixo ${prefixo}`);
+        } else {
+          const { error } = await supabaseClient.from('veiculos').insert([payload]);
+          if (error) throw error;
+          await registrarAuditoria(`Cadastrou novo veículo prefixo ${prefixo}`);
+        }
+        fecharModal('modalVeiculo');
+        await carregarDados();
+      } catch (err) {
+        alert('Erro ao salvar veículo: ' + err.message);
+      }
+    }
+
+    async function excluirVeiculo(id) {
+      const v = cacheDadosGlobais.veiculos.find(item => item.id === id);
+      if (!confirm(`Deseja realmente excluir o veículo ${v?.prefixo || id}?`)) return;
+      try {
+        const { error } = await supabaseClient.from('veiculos').delete().eq('id', id);
+        if (error) throw error;
+        await registrarAuditoria(`Excluiu veículo ${v?.prefixo || id}`);
+        await carregarDados();
+      } catch (err) {
+        alert('Erro ao excluir veículo: ' + err.message);
+      }
+    }
+
+    // USUÁRIOS
+    function abrirModalUsuario(id = null) {
+      document.getElementById('modalUsuario').style.display = 'flex';
+      if (id) {
+        const u = cacheDadosGlobais.usuarios.find(item => item.id === id);
+        document.getElementById('modalUsuarioTitulo').innerText = 'Editar Usuário';
+        document.getElementById('usuarioIdHidden').value = u.id;
+        document.getElementById('usuarioNome').value = u.nome || '';
+        document.getElementById('usuarioCpf').value = u.cpf || '';
+        document.getElementById('usuarioFuncao').value = u.funcao || 'MOTORISTA';
+        document.getElementById('usuarioServico').value = u.servico || 'Fretamento';
+        document.getElementById('usuarioSenha').value = u.senha || '';
+      } else {
+        document.getElementById('modalUsuarioTitulo').innerText = 'Novo Usuário';
+        document.getElementById('usuarioIdHidden').value = '';
+        document.getElementById('usuarioNome').value = '';
+        document.getElementById('usuarioCpf').value = '';
+        document.getElementById('usuarioFuncao').value = 'MOTORISTA';
+        document.getElementById('usuarioServico').value = 'Fretamento';
+        document.getElementById('usuarioSenha').value = '';
+      }
+    }
+
+    async function salvarUsuario() {
+      const id = document.getElementById('usuarioIdHidden').value;
+      const nome = document.getElementById('usuarioNome').value.trim();
+      const cpf = document.getElementById('usuarioCpf').value.trim();
+      const funcao = document.getElementById('usuarioFuncao').value;
+      const servico = document.getElementById('usuarioServico').value;
+      const senha = document.getElementById('usuarioSenha').value.trim();
+
+      if (!nome || !cpf) {
+        alert('Nome e CPF são obrigatórios.');
+        return;
+      }
+
+      const payload = {
+        nome, cpf, funcao, servico, senha,
+        garagem_id: (!ehMaster() && usuarioLogado.garagem_id) ? usuarioLogado.garagem_id : null
+      };
+
+      try {
+        if (id) {
+          const { error } = await supabaseClient.from('usuarios').update(payload).eq('id', id);
+          if (error) throw error;
+          await registrarAuditoria(`Atualizou usuário ${nome}`);
+        } else {
+          const { error } = await supabaseClient.from('usuarios').insert([payload]);
+          if (error) throw error;
+          await registrarAuditoria(`Cadastrou novo usuário ${nome}`);
+        }
+        fecharModal('modalUsuario');
+        await carregarDados();
+      } catch (err) {
+        alert('Erro ao salvar usuário: ' + err.message);
+      }
+    }
+
+    async function excluirUsuario(id) {
+      const u = cacheDadosGlobais.usuarios.find(item => item.id === id);
+      if (!confirm(`Deseja realmente excluir o usuário ${u?.nome || id}?`)) return;
+      try {
+        const { error } = await supabaseClient.from('usuarios').delete().eq('id', id);
+        if (error) throw error;
+        await registrarAuditoria(`Excluiu usuário ${u?.nome || id}`);
+        await carregarDados();
+      } catch (err) {
+        alert('Erro ao excluir usuário: ' + err.message);
+      }
+    }
+
+    // GARAGENS
+    function abrirModalGaragem(id = null) {
+      document.getElementById('modalGaragem').style.display = 'flex';
+      if (id) {
+        const g = cacheDadosGlobais.garagens.find(item => item.id === id);
+        document.getElementById('modalGaragemTitulo').innerText = 'Editar Garagem';
+        document.getElementById('garagemIdHidden').value = g.id;
+        document.getElementById('garagemNome').value = g.nome || '';
+        document.getElementById('garagemCidade').value = g.cidade || '';
+      } else {
+        document.getElementById('modalGaragemTitulo').innerText = 'Nova Garagem';
+        document.getElementById('garagemIdHidden').value = '';
+        document.getElementById('garagemNome').value = '';
+        document.getElementById('garagemCidade').value = '';
+      }
+    }
+
+    async function salvarGaragem() {
+      const id = document.getElementById('garagemIdHidden').value;
+      const nome = document.getElementById('garagemNome').value.trim();
+      const cidade = document.getElementById('garagemCidade').value.trim();
+
+      if (!nome) {
+        alert('Nome da garagem é obrigatório.');
+        return;
+      }
+
+      const payload = { nome, cidade };
+
+      try {
+        if (id) {
+          const { error } = await supabaseClient.from('garagens').update(payload).eq('id', id);
+          if (error) throw error;
+          await registrarAuditoria(`Atualizou garagem ${nome}`);
+        } else {
+          const { error } = await supabaseClient.from('garagens').insert([payload]);
+          if (error) throw error;
+          await registrarAuditoria(`Cadastrou nova garagem ${nome}`);
+        }
+        fecharModal('modalGaragem');
+        await carregarDados();
+      } catch (err) {
+        alert('Erro ao salvar garagem: ' + err.message);
+      }
+    }
+
+    async function excluirGaragem(id) {
+      const g = cacheDadosGlobais.garagens.find(item => item.id === id);
+      if (!confirm(`Deseja realmente excluir a garagem ${g?.nome || id}?`)) return;
+      try {
+        const { error } = await supabaseClient.from('garagens').delete().eq('id', id);
+        if (error) throw error;
+        await registrarAuditoria(`Excluiu garagem ${g?.nome || id}`);
+        await carregarDados();
+      } catch (err) {
+        alert('Erro ao excluir garagem: ' + err.message);
+      }
+    }
+
     function filtrarMes(mes, btn) {
       mesSelecionado = mes;
       btn.parentElement.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
@@ -1293,11 +1884,11 @@
     }
 
     function filtrarGaragemPill(gId, btn) {
+      if (!ehMaster() && usuarioLogado.garagem_id) return;
       garagemSelecionada = gId;
       btn.parentElement.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       
-      // Atualiza os selects dependentes de garagem
       atualizarSelectsDependentes();
       aplicarFiltrosLocais();
     }
@@ -1349,7 +1940,11 @@
       const tb = document.getElementById('tabelaAuditoria');
       tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>';
       try {
-        const { data, error } = await supabaseClient.from('auditoria').select('*').order('id', { ascending: false }).limit(50);
+        let query = supabaseClient.from('auditoria').select('*').order('id', { ascending: false }).limit(50);
+        if (!ehMaster() && usuarioLogado.id) {
+          query = query.eq('usuario_id', usuarioLogado.id);
+        }
+        const { data, error } = await query;
         if (error) throw error;
         tb.innerHTML = (data || []).map(l => `
           <tr>
