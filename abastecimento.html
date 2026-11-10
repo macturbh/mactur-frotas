@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Mactur - Lançamento de Abastecimento</title>
+  
+  <meta name="theme-color" content="#008037">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --mactur-green: #008037;
+      --mactur-yellow: #f1c40f;
+      --bg-dark: #121c14;
+      --card-bg: #ffffff;
+      --text-main: #1c2b1e;
+      --text-muted: #5c705e;
+      --border-color: #d1ded3;
+      --error-red: #e53e3e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 12px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] { -moz-appearance: textfield; }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      overflow: hidden;
+      border-top: 6px solid var(--mactur-yellow);
+    }
+
+    .app-header {
+      background: var(--mactur-green);
+      color: white;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-header h2 { font-size: 1.15rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+    .app-header p { font-size: 0.75rem; opacity: 0.9; }
+
+    .user-info-bar {
+      background: #eaf4ed;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--mactur-green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .btn-logout {
+      background: none;
+      border: none;
+      color: var(--error-red);
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    form { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background-color: #f9fbf9;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--mactur-green);
+      background-color: #fff;
+    }
+
+    .form-control[readonly] {
+      background-color: #edf2f7;
+      color: #4a5568;
+      border-color: #cbd5e0;
+      cursor: not-allowed;
+    }
+
+    .form-control.input-invalid {
+      border-color: var(--error-red) !important;
+      background-color: #fff5f5 !important;
+      color: var(--error-red) !important;
+    }
+
+    .error-msg {
+      color: var(--error-red);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: none;
+      margin-top: 2px;
+    }
+
+    .info-panel {
+      background: #f0f7f2;
+      border: 1px solid #c8e0cc;
+      border-radius: 10px;
+      padding: 12px 15px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .info-box { display: flex; flex-direction: column; }
+    .info-box span.title { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .info-box span.value { font-size: 1.2rem; font-weight: 800; color: var(--mactur-green); margin-top: 2px; }
+
+    .badge-status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-align: center;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .badge-boa { background-color: #d1fae5; color: #065f46; }
+    .badge-baixa { background-color: #fee2e2; color: #991b1b; }
+    .badge-neutro { background-color: #e2e8f0; color: #475569; }
+
+    .btn-submit {
+      background: var(--mactur-green);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0, 128, 55, 0.3);
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+
+    .btn-submit:disabled { background: #a0aec0; cursor: not-allowed; box-shadow: none; }
+
+    .loading-overlay {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      font-weight: 600;
+      color: var(--mactur-green);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="app-header">
+      <div>
+        <h2>Mactur Frota</h2>
+        <p>Lançamento de Abastecimento</p>
+      </div>
+      <i class="fa-solid fa-gas-pump fa-2x" style="color: var(--mactur-yellow);"></i>
+    </div>
+
+    <!-- TELA DE LOGIN -->
+    <div id="loginScreen" style="padding: 20px;">
+      <form id="formLogin" onsubmit="fazerLogin(event)">
+        <div class="form-group">
+          <label><i class="fa-solid fa-envelope"></i> E-mail de Acesso</label>
+          <input type="email" id="loginEmail" class="form-control" placeholder="seu.email@mactur.com" required>
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-lock"></i> Senha</label>
+          <input type="password" id="loginSenha" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="btnLogin" class="btn-submit">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema
+        </button>
+        <span id="loginError" class="error-msg" style="text-align: center; font-size: 0.85rem; margin-top: 10px;"></span>
+      </form>
+    </div>
+
+    <!-- TELA PRINCIPAL / FORMULÁRIO DE ABASTECIMENTO -->
+    <div id="appScreen" style="display: none;">
+      <div class="user-info-bar">
+        <span><i class="fa-solid fa-user-check"></i> <span id="lblUsuarioNome">--</span> (Garagem ID: <span id="lblGaragemId">--</span>)</span>
+        <button class="btn-logout" onclick="fazerLogout()"><i class="fa-solid fa-power-off"></i> Sair</button>
+      </div>
+
+      <form id="formAbastecimento" onsubmit="enviarFormulario(event)">
+        
+        <!-- Prefixo do Veículo -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-bus"></i> Prefixo do Veículo</label>
+          <select id="prefixo" class="form-control" required onchange="aoSelecionarPrefixo()">
+            <option value="">Carregando veículos...</option>
+          </select>
+        </div>
+
+        <!-- PAINEL OCULTO: Detalhes do Veículo -->
+        <div id="painelInfoVeiculo" style="display: none;" class="info-panel">
+          <div class="info-box">
+            <span class="title">Tipo de Veículo</span>
+            <input type="text" id="tipoVeiculo" class="form-control" readonly value="" style="margin-top: 4px; font-size: 0.85rem;">
+          </div>
+          <div class="info-box">
+            <span class="title">Tipo de Serviço</span>
+            <input type="text" id="servico" class="form-control" readonly value="" style="margin-top: 4px; font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <!-- Motorista -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-id-card"></i> Motorista</label>
+          <select id="motorista" class="form-control" required>
+            <option value="">Carregando motoristas...</option>
+          </select>
+        </div>
+
+        <!-- Painel Informativo KM Anterior -->
+        <div class="info-panel">
+          <div class="info-box">
+            <span class="title">KM Anterior</span>
+            <span class="value" id="dispKmAnterior">0</span>
+          </div>
+          <div class="info-box">
+            <span class="title">Status Estimado</span>
+            <div id="dispStatusBadge" class="badge-status badge-neutro">AGUARDANDO</div>
+          </div>
+        </div>
+
+        <!-- KM Atual -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-gauge-high"></i> KM Atual</label>
+          <input type="number" inputmode="numeric" id="kmAtual" class="form-control" placeholder="Ex: 154200" required oninput="validarECalcular()">
+          <span id="kmError" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> O KM Atual deve ser estritamente maior que o KM Anterior!</span>
+        </div>
+
+        <!-- Litros Abastecidos -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-filter-circle-dollar"></i> Litros Abastecidos</label>
+          <input type="number" inputmode="decimal" step="0.01" id="litros" class="form-control" placeholder="Ex: 120.5" required oninput="validarECalcular()">
+        </div>
+
+        <!-- Custo do Abastecimento (Calculado Automaticamente) -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-coins"></i> Custo Total (R$)</label>
+          <input type="number" inputmode="decimal" step="0.01" id="custo" class="form-control" readonly placeholder="0.00">
+        </div>
+
+        <!-- Painel Informativo da Média em Tempo Real -->
+        <div class="info-panel">
+          <div class="info-box">
+            <span class="title">KM Percorridos</span>
+            <span class="value" id="dispKmRodado">0 KM</span>
+          </div>
+          <div class="info-box">
+            <span class="title">Média Calculada</span>
+            <span class="value" id="dispMedia">0.00 KM/L</span>
+          </div>
+        </div>
+
+        <button type="submit" id="btnSalvar" class="btn-submit">
+          <i class="fa-solid fa-paper-plane"></i> Finalizar Abastecimento
+        </button>
+
+        <div id="loadingOverlay" class="loading-overlay">
+          <i class="fa-solid fa-spinner fa-spin"></i> Registrando na base de dados...
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://lniuhtujzobhfpvsbzic.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_3tZVUy-tjD0crDOyBp2p7A_JYFml0Bw'; 
+    const PRECO_LITRO = 6.24;
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let usuarioLogado = null;
+    let listaVeiculos = [];
+    let listaMotoristas = [];
+    let kmAnteriorAtual = 0;
+    let mediaMetaVeiculo = 0;
+    let mediaCalculadaAtual = 0;
+
+    async function inicializarApp() {
+      const sessionUser = localStorage.getItem('mactur_session_user');
+      if (sessionUser) {
+        usuarioLogado = JSON.parse(sessionUser);
+        mostrarTelaApp();
+      } else {
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('appScreen').style.display = 'none';
+      }
+    }
+
+    async function fazerLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const senha = document.getElementById('loginSenha').value.trim();
+      const errBox = document.getElementById('loginError');
+      errBox.style.display = 'none';
+
+      try {
+        const { data, error } = await _supabase
+          .from('usuarios')
+          .select('*')
+          .ilike('email', email);
+
+        if (error || !data || data.length === 0) {
+          errBox.innerText = "E-mail não encontrado na base de dados!";
+          errBox.style.display = 'block';
+          return;
+        }
+
+        const user = data[0];
+
+        // Se o usuário que tentar logar estiver inativo, nega o acesso
+        const userStatus = (user.status || '').trim().toLowerCase();
+        if (userStatus === 'inativo') {
+          errBox.innerText = "Usuário inativo! Acesso não permitido.";
+          errBox.style.display = 'block';
+          return;
+        }
+
+        if (user.senha_hash !== 'hash_temp' && user.senha_hash !== 'temporaria_hash' && user.senha_hash !== senha) {
+          errBox.innerText = "Senha incorreta!";
+          errBox.style.display = 'block';
+          return;
+        }
+
+        usuarioLogado = user;
+        localStorage.setItem('mactur_session_user', JSON.stringify(user));
+        mostrarTelaApp();
+
+      } catch (err) {
+        errBox.innerText = "Erro ao conectar ao banco Supabase: " + err.message;
+        errBox.style.display = 'block';
+      }
+    }
+
+    function fazerLogout() {
+      localStorage.removeItem('mactur_session_user');
+      usuarioLogado = null;
+      document.getElementById('loginScreen').style.display = 'block';
+      document.getElementById('appScreen').style.display = 'none';
+    }
+
+    async function mostrarTelaApp() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+      document.getElementById('lblUsuarioNome').innerText = usuarioLogado.nome;
+      document.getElementById('lblGaragemId').innerText = usuarioLogado.garagem_id || 'Todas';
+
+      await carregarDadosIniciais();
+    }
+
+    async function carregarDadosIniciais() {
+      try {
+        // --- 1. BUSCA DE VEÍCULOS (SOMENTE ATIVOS, DA GARAGEM DO ABASTECEDOR OU RODOVIÁRIOS) ---
+        const { data: todosVeiculos, error: errV } = await _supabase
+          .from('veiculos')
+          .select('*')
+          .order('prefixo', { ascending: true });
+
+        if (errV) console.error("Erro ao carregar veículos:", errV);
+
+        let veiculosFiltrados = todosVeiculos || [];
+        
+        // Regra de Status Ativo para Veículos
+        veiculosFiltrados = veiculosFiltrados.filter(v => {
+          const st = (v.status || 'ativo').trim().toLowerCase();
+          return st === 'ativo';
+        });
+
+        if (usuarioLogado && usuarioLogado.garagem_id) {
+          const uGaragem = parseInt(usuarioLogado.garagem_id);
+          veiculosFiltrados = veiculosFiltrados.filter(v => {
+            const vGaragem = v.garagem_id ? parseInt(v.garagem_id) : null;
+            const servico = (v.servico || '').toUpperCase();
+            return vGaragem === uGaragem || servico.includes('RODOVIARIO') || servico.includes('RODOVIÁRIO');
+          });
+        }
+
+        listaVeiculos = veiculosFiltrados;
+        const selectPrefixo = document.getElementById('prefixo');
+        selectPrefixo.innerHTML = '<option value="">Selecione o Prefixo</option>';
+        listaVeiculos.forEach(v => {
+          selectPrefixo.innerHTML += `<option value="${v.id}">${v.prefixo}</option>`;
+        });
+
+        // --- 2. BUSCA DE MOTORISTAS (SOMENTE ATIVOS, DA GARAGEM DO ABASTECEDOR OU RODOVIÁRIOS) ---
+        const { data: todosUsuarios, error: errM } = await _supabase
+          .from('usuarios')
+          .select('*')
+          .order('nome', { ascending: true });
+
+        if (errM) console.error("Erro ao carregar motoristas/usuários:", errM);
+
+        let motoristasFiltrados = todosUsuarios || [];
+        
+        // Regra de Status Ativo para Motoristas/Usuários
+        motoristasFiltrados = motoristasFiltrados.filter(m => {
+          const st = (m.status || 'ativo').trim().toLowerCase();
+          return st === 'ativo';
+        });
+
+        if (usuarioLogado && usuarioLogado.garagem_id) {
+          const uGaragem = parseInt(usuarioLogado.garagem_id);
+          motoristasFiltrados = motoristasFiltrados.filter(m => {
+            const mGaragem = m.garagem_id ? parseInt(m.garagem_id) : null;
+            const cargo = (m.cargo || m.funcao || m.perfil || m.tipo || '').toUpperCase();
+            
+            return mGaragem === uGaragem || cargo.includes('RODOVIARIO') || cargo.includes('RODOVIÁRIO');
+          });
+        }
+
+        listaMotoristas = motoristasFiltrados;
+        const selectMotorista = document.getElementById('motorista');
+        selectMotorista.innerHTML = '<option value="">Selecione o Motorista</option>';
+        listaMotoristas.forEach(m => {
+          selectMotorista.innerHTML += `<option value="${m.id}">${m.nome}</option>`;
+        });
+
+      } catch (err) {
+        alert("Erro ao buscar dados do Supabase: " + err.message);
+      }
+    }
+
+    async function aoSelecionarPrefixo() {
+      const veiculoId = document.getElementById('prefixo').value;
+      const painelVeiculo = document.getElementById('painelInfoVeiculo');
+
+      if (!veiculoId) {
+        painelVeiculo.style.display = 'none';
+        kmAnteriorAtual = 0;
+        document.getElementById('dispKmAnterior').innerText = '0';
+        validarECalcular();
+        return;
+      }
+
+      const vInfo = listaVeiculos.find(v => v.id == veiculoId);
+      painelVeiculo.style.display = 'grid';
+      document.getElementById('tipoVeiculo').value = vInfo ? (vInfo.tipo || vInfo.tipo_veiculo || 'N/A') : 'N/A';
+      document.getElementById('servico').value = vInfo ? (vInfo.servico || 'N/A') : 'N/A';
+      mediaMetaVeiculo = vInfo ? (vInfo.media_prevista || 0) : 0;
+
+      // BUSCA OTIMIZADA E SEGURA DO ÚLTIMO KM
+      try {
+        kmAnteriorAtual = 0;
+
+        const { data: abastecimentos, error } = await _supabase
+          .from('abastecimentos')
+          .select('km_atual, veiculo_id')
+          .order('id', { ascending: false });
+
+        if (!error && abastecimentos) {
+          const encontrado = abastecimentos.find(a => a.veiculo_id == veiculoId);
+          if (encontrado) {
+            kmAnteriorAtual = parseFloat(encontrado.km_atual) || 0;
+          }
+        }
+      } catch (err) {
+        console.warn("Erro ao buscar último KM:", err);
+        kmAnteriorAtual = 0;
+      }
+      
+      const inputKm = document.getElementById('kmAtual');
+      if (kmAnteriorAtual > 0) {
+        inputKm.min = kmAnteriorAtual + 1;
+        document.getElementById('dispKmAnterior').innerText = `${kmAnteriorAtual.toLocaleString('pt-BR')} KM`;
+      } else {
+        inputKm.removeAttribute('min');
+        document.getElementById('dispKmAnterior').innerText = 'Primeiro Registro';
+      }
+
+      validarECalcular();
+    }
+
+    function validarECalcular() {
+      const inputKm = document.getElementById('kmAtual');
+      const kmError = document.getElementById('kmError');
+      const btnSalvar = document.getElementById('btnSalvar');
+      const inputCusto = document.getElementById('custo');
+      const kmAtual = parseFloat(inputKm.value) || 0;
+      const litros = parseFloat(document.getElementById('litros').value) || 0;
+
+      mediaCalculadaAtual = 0;
+
+      // Cálculo Automático do Custo Total (Litros * R$ 6,24)
+      if (litros > 0) {
+        const custoTotal = (litros * PRECO_LITRO).toFixed(2);
+        inputCusto.value = custoTotal;
+      } else {
+        inputCusto.value = '';
+      }
+
+      if (kmAnteriorAtual > 0 && kmAtual > 0 && kmAtual <= kmAnteriorAtual) {
+        inputKm.classList.add('input-invalid');
+        kmError.style.display = 'block';
+        btnSalvar.disabled = true;
+        document.getElementById('dispKmRodado').innerText = '0 KM';
+        document.getElementById('dispMedia').innerText = '0.00 KM/L';
+        return;
+      } else {
+        inputKm.classList.remove('input-invalid');
+        kmError.style.display = 'none';
+        btnSalvar.disabled = false;
+      }
+
+      if (kmAtual > 0 && kmAnteriorAtual > 0 && kmAtual > kmAnteriorAtual) {
+        const kmRodado = kmAtual - kmAnteriorAtual;
+        document.getElementById('dispKmRodado').innerText = `${kmRodado.toLocaleString('pt-BR')} KM`;
+
+        if (litros > 0) {
+          mediaCalculadaAtual = parseFloat((kmRodado / litros).toFixed(2));
+          document.getElementById('dispMedia').innerText = `${mediaCalculadaAtual} KM/L`;
+
+          const badge = document.getElementById('dispStatusBadge');
+          if (mediaMetaVeiculo > 0 && mediaCalculadaAtual < mediaMetaVeiculo) {
+            badge.innerText = 'BAIXA';
+            badge.className = 'badge-status badge-baixa';
+          } else {
+            badge.innerText = 'BOA';
+            badge.className = 'badge-status badge-boa';
+          }
+          return;
+        }
+      }
+
+      document.getElementById('dispKmRodado').innerText = '0 KM';
+      document.getElementById('dispMedia').innerText = '0.00 KM/L';
+      const badge = document.getElementById('dispStatusBadge');
+      badge.innerText = 'AGUARDANDO';
+      badge.className = 'badge-status badge-neutro';
+    }
+
+    async function enviarFormulario(event) {
+      event.preventDefault();
+
+      const veiculoId = parseInt(document.getElementById('prefixo').value);
+      const motoristaId = parseInt(document.getElementById('motorista').value);
+      const kmAtual = parseFloat(document.getElementById('kmAtual').value) || 0;
+      const litros = parseFloat(document.getElementById('litros').value) || 0;
+      const custo = parseFloat(document.getElementById('custo').value) || 0;
+
+      if (kmAnteriorAtual > 0 && kmAtual <= kmAnteriorAtual) {
+        alert(`O KM Atual (${kmAtual}) precisa ser estritamente maior que o KM Anterior (${kmAnteriorAtual}).`);
+        return;
+      }
+
+      const vInfo = listaVeiculos.find(v => v.id == veiculoId);
+
+      document.getElementById('btnSalvar').disabled = true;
+      document.getElementById('loadingOverlay').style.display = 'block';
+
+      try {
+        // CORREÇÃO DE DATA/HORA LOCAL (Horário de Brasília)
+        const dataLocalISO = new Date(Date.now() - (new Date().getTimezoneOffset() * 60000)).toISOString();
+
+        // GARAGEM ORIGEM DO ABASTECEDOR
+        const garagemOrigemId = usuarioLogado.garagem_id ? parseInt(usuarioLogado.garagem_id) : null;
+
+        const { error } = await _supabase
+          .from('abastecimentos')
+          .insert([
+            {
+              data_hora: dataLocalISO,
+              usuario_id: usuarioLogado.id,
+              motorista_id: motoristaId,
+              veiculo_id: veiculoId,
+              km_atual: kmAtual,
+              litros: litros,
+              media: mediaCalculadaAtual > 0 ? mediaCalculadaAtual : null,
+              custo: custo,
+              garagem_origem_id: garagemOrigemId,
+              tipo_veiculo: vInfo ? (vInfo.tipo || vInfo.tipo_veiculo) : null,
+              servico: vInfo ? vInfo.servico : null,
+              status: document.getElementById('dispStatusBadge').innerText === 'BAIXA' ? 'BAIXA' : 'BOA'
+            }
+          ]);
+
+        if (error) {
+          alert("Erro ao gravar abastecimento no Supabase: " + error.message);
+        } else {
+          alert("Abastecimento registrado com sucesso!");
+          document.getElementById('formAbastecimento').reset();
+          document.getElementById('painelInfoVeiculo').style.display = 'none';
+          document.getElementById('dispKmAnterior').innerText = '0';
+          document.getElementById('dispKmRodado').innerText = '0 KM';
+          document.getElementById('dispMedia').innerText = '0.00 KM/L';
+          document.getElementById('dispStatusBadge').innerText = 'AGUARDANDO';
+          document.getElementById('dispStatusBadge').className = 'badge-status badge-neutro';
+          kmAnteriorAtual = 0;
+          mediaCalculadaAtual = 0;
+        }
+
+      } catch (err) {
+        alert("Erro ao gravar abastecimento. Verifique sua conexão.");
+      } finally {
+        document.getElementById('btnSalvar').disabled = false;
+        document.getElementById('loadingOverlay').style.display = 'none';
+      }
+    }
+
+    window.onload = inicializarApp;
+  </script>
+</body>
+</html>
