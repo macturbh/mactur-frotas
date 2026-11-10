@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mactur - Central Operacional da Garagem</title>
+  
+  <!-- FontAwesome, Tailwind CSS & Supabase -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mactur: {
+              green: '#006837',
+              greenDark: '#004D25',
+              greenLight: '#00A859',
+              yellow: '#FFCC00',
+              yellowDark: '#E6B800',
+              dark: '#08140C',
+              blue: '#0056B3',
+              blueDark: '#002B5B',
+              blueLight: '#3399FF'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-primary: #0a140c;
+      --bg-card: rgba(255, 255, 255, 0.95);
+      --text-main: #1c2b1e;
+      --text-muted: #4a5c4c;
+      --mactur-green: #008037;
+      --mactur-yellow: #f1c40f;
+      --mactur-blue: #1e3a8a;
+      --mactur-red: #e74c3c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    body { 
+      background: var(--bg-primary);
+      color: var(--text-main); 
+      padding: 10px; 
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Tela de Login sobreposta */
+    #loginScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #00876c, #1e3a8a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .login-card {
+      background: white;
+      padding: 35px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border-top: 6px solid var(--mactur-yellow);
+    }
+
+    .login-card h2 {
+      text-align: center;
+      color: var(--mactur-green);
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .login-card input {
+      padding: 10px 14px;
+      border: 1px solid #d1ded3;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      width: 100%;
+      font-weight: 600;
+    }
+
+    .login-card button {
+      background: var(--mactur-green);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    /* Cabeçalho */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      padding: 10px 20px;
+      border-radius: 10px;
+      border-left: 6px solid var(--mactur-green);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Bloco de Data e Hora em Destaque */
+    .clock-display-header {
+      background: #eaf2eb;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid #d0ded2;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .clock-time {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--mactur-green);
+      line-height: 1;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .clock-date {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .brand-area { display: flex; align-items: center; gap: 12px; }
+    .brand-logo { height: 36px; width: auto; object-fit: contain; }
+    .title-area h1 { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; color: var(--text-main); }
+    .title-area p { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .login-filter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #eaf2eb;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #d0ded2;
+    }
+
+    .login-filter label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+    .login-filter select {
+      background: transparent;
+      border: none;
+      font-weight: 700;
+      color: var(--text-main);
+      outline: none;
+      font-size: 0.8rem;
+    }
+
+    .user-profile-display {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #eaf2eb;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #d0ded2;
+    }
+
+    .btn-logout {
+      background: var(--mactur-red);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    /* Layout Principal */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 65% 35%;
+      gap: 10px;
+      flex-grow: 1;
+      overflow: hidden;
+    }
+
+    .operational-side {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* Grid de KPIs */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      padding: 8px 10px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 4px solid var(--mactur-green);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .kpi-card.yellow { border-left-color: var(--mactur-yellow); }
+    .kpi-card.blue { border-left-color: var(--mactur-blue); }
+    .kpi-card.red { border-left-color: var(--mactur-red); }
+
+    .kpi-info h3 { font-size: 0.62rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+    .kpi-info .value { font-size: 1.1rem; font-weight: 800; margin-top: 2px; color: var(--text-main); }
+
+    /* Grid de Tabelas Operacionais */
+    .grid-tables {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      flex-grow: 1;
+    }
+
+    .card-box {
+      background: var(--bg-card);
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      max-height: 540px;
+    }
+
+    .card-box h3 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-main);
+      text-transform: uppercase;
+    }
+
+    .table-container {
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.7rem; }
+    th { background: #e8f2e9; padding: 6px; position: sticky; top: 0; z-index: 2; color: var(--text-muted); font-weight: 800; text-transform: uppercase; }
+    td { padding: 6px; border-bottom: 1px solid #d0ded2; vertical-align: top; }
+
+    .badge-status {
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.62rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    .st-aberto { background: #fee2e2; color: #991b1b; }
+    .st-andamento { background: #fef3c7; color: #92400e; }
+    .st-concluido { background: #d1fae5; color: #065f46; }
+
+    /* Container do Carrossel (Canto Direito) */
+    .right-side-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .carousel-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #040A06;
+      border-radius: 12px;
+      border: 2px solid #00A859;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: scale(1.02);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      z-index: 10;
+    }
+
+    .glass-panel {
+      background: rgba(0, 48, 24, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 204, 0, 0.35);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .glass-blue {
+      background: rgba(0, 43, 91, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 153, 255, 0.45);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .progress-bar-inner {
+      transition: width 0.1s linear;
+    }
+
+    .text-shadow-hero {
+      text-shadow: 0 3px 12px rgba(0, 0, 0, 0.9);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TELA DE LOGIN -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <h2>
+        <i class="fa-solid fa-bus-simple" style="color:var(--mactur-yellow);"></i>
+        Mactur Login Garagem
+      </h2>
+      <div id="loginError" style="color:#e53e3e;font-size:0.8rem;font-weight:700;text-align:center;display:none;"></div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:#4a5c4c;">Usuário / CPF</label>
+        <input type="text" id="loginUsuario" placeholder="Digite seu nome ou CPF">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <label style="font-size:0.75rem;font-weight:700;color:#4a5c4c;">Senha / CPF</label>
+        <input type="password" id="loginSenha" placeholder="Digite sua senha">
+      </div>
+      <button onclick="realizarLogin()">Entrar no Painel</button>
+    </div>
+  </div>
+
+  <!-- CABEÇALHO COM DATA E HORA DESTAQUE ANTES DO USUÁRIO E FILTROS -->
+  <header>
+    <div class="header-left">
+      <!-- 1. HORA E DATA EXIBIDAS ANTES DO LOGIN E LOGO -->
+      <div class="clock-display-header">
+        <div class="clock-time" id="relogioHora">--:--:--</div>
+        <div class="clock-date" id="relogioData">--/--/----</div>
+      </div>
+
+      <!-- 2. LOGO E TÍTULO -->
+      <div class="brand-area">
+        <img src="logo.png" alt="Mactur Logo" class="brand-logo" onerror="this.style.display='none'">
+        <div class="title-area">
+          <h1>Central Operacional — Garagem Mactur</h1>
+          <p>Monitoramento em Tempo Real de Abastecimentos e Manutenção Preventiva</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. PAINEL DE USUÁRIO, LOGOUT E FILTRO DE GARAGEM -->
+    <div class="header-controls">
+      <div class="user-profile-display">
+        <i class="fa-solid fa-circle-user" style="color:var(--mactur-green)"></i>
+        <span id="userInfoDisplay">Não autenticado</span>
+      </div>
+
+      <div class="login-filter">
+        <i class="fa-solid fa-warehouse" style="color:var(--mactur-green)"></i>
+        <label>Garagem:</label>
+        <select id="selectGaragemLogin" onchange="carregarDadosGaragem()">
+          <option value="TODOS">Todas as Garagens</option>
+          <option value="BH">Belo Horizonte (BH)</option>
+          <option value="CONTAGEM">Contagem / Betim</option>
+          <option value="POUSO_ALEGRE">Pouso Alegre</option>
+        </select>
+      </div>
+
+      <button class="btn-logout" onclick="realizarLogout()">Sair</button>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    
+    <!-- LADO ESQUERDO: Painel de Controle Operacional -->
+    <div class="operational-side">
+      
+      <!-- KPIs Operacionais -->
+      <div class="kpi-grid">
+        <div class="kpi-card yellow">
+          <div class="kpi-info">
+            <h3>Abastecimentos Mês</h3>
+            <div class="value" id="kpiQtdAbastMes">0</div>
+          </div>
+        </div>
+
+        <div class="kpi-card yellow">
+          <div class="kpi-info">
+            <h3>Diesel Mês (Litros)</h3>
+            <div class="value" id="kpiLitrosMes">0 L</div>
+          </div>
+        </div>
+
+        <div class="kpi-card blue">
+          <div class="kpi-info">
+            <h3>Total Abastecimentos</h3>
+            <div class="value" id="kpiTotalAbastGeral">0</div>
+          </div>
+        </div>
+
+        <div class="kpi-card red">
+          <div class="kpi-info">
+            <h3>OS Abertas Hoje</h3>
+            <div class="value" id="kpiOsAberto">0</div>
+          </div>
+        </div>
+
+        <div class="kpi-card yellow">
+          <div class="kpi-info">
+            <h3>OS em Andamento</h3>
+            <div class="value" id="kpiOsAndamento">0</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <h3>OS Concluídas</h3>
+            <div class="value" id="kpiOsFechadas">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabelas Divididas: Manutenção Preventiva e Abastecimentos -->
+      <div class="grid-tables">
+        
+        <!-- Tabela 1: Manutenção Preventiva & Solicitações -->
+        <div class="card-box">
+          <h3><i class="fa-solid fa-screwdriver-wrench" style="color:var(--mactur-yellow)"></i> Manutenção Preventiva & Solicitações</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Prefixo</th>
+                  <th>Motorista</th>
+                  <th>Solicitação / Ocorrência</th>
+                  <th>Status OS</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyManutencao"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabela 2: Relatório dos Últimos Abastecimentos (Supabase) -->
+        <div class="card-box">
+          <h3><i class="fa-solid fa-gas-pump" style="color:var(--mactur-green)"></i> Últimos Abastecimentos da Frota</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Prefixo</th>
+                  <th>KM Atual</th>
+                  <th>Litros</th>
+                  <th>Média</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyAbastecimentos"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- LADO DIREITO: Apresentação Informativa da Mactur em Carrossel -->
+    <div class="right-side-container">
+      <div class="carousel-stage">
+        
+        <!-- Barra de Progresso do Autoplay -->
+        <div class="absolute top-0 left-0 right-0 h-1 bg-black/60 z-50">
+          <div id="progressBar" class="progress-bar-inner h-full bg-mactur-yellow w-0 shadow-md"></div>
+        </div>
+
+        <!-- CABEÇALHO DO CARROSSEL -->
+        <div class="absolute top-0 left-0 right-0 z-40 p-3 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
+          <div class="flex items-center gap-2">
+            <div class="bg-mactur-yellow border border-mactur-green rounded-full px-3 py-1 flex items-center transform -skew-x-6">
+              <span class="text-mactur-green font-black italic text-xs tracking-tighter">MACTUR</span>
+            </div>
+            <span class="text-[9px] font-black tracking-widest text-mactur-yellow uppercase">Segurança Que Nos Move</span>
+          </div>
+
+          <div id="badgeStatus" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-mactur-green/90 text-mactur-yellow border border-mactur-yellow/50 backdrop-blur-md flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-mactur-yellow animate-ping"></span>
+            <span id="badgeText">SAFETY MACTUR</span>
+          </div>
+        </div>
+
+        <!-- SLIDE 1: ABERTURA INSTITUCIONAL -->
+        <div class="slide active" data-slide="1">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://raw.githubusercontent.com/macturbh/assets/main/WhatsApp%20Image%202026-01-12%20at%2014.43.07.jpeg');">
+            <div class="absolute inset-0 bg-gradient-to-r from-mactur-dark/95 via-mactur-green/85 to-black/60"></div>
+          </div>
+          
+          <div class="relative z-20 h-full flex flex-col justify-center pt-8">
+            <span class="inline-block mb-2 px-2.5 py-1 bg-mactur-yellow text-mactur-green font-black text-[10px] rounded uppercase tracking-wider w-fit">Apresentação & Safety</span>
+            <h1 class="text-2xl font-black text-white leading-tight mb-3 text-shadow-hero">
+              MACTUR <br>
+              <span class="text-mactur-yellow">FRETAMENTOS E TURISMO</span>
+            </h1>
+            <div class="p-3 glass-panel rounded-xl border-l-4 border-mactur-yellow mb-3">
+              <p class="text-xs font-bold text-white leading-snug">
+                "Nossa missão é transportar pessoas.<br>
+                <span class="text-mactur-yellow">Nosso compromisso é preservar vidas!"</span>
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 text-[9px] font-bold text-gray-200">
+              <div class="bg-black/60 px-2 py-1 rounded border border-mactur-yellow/30 flex items-center gap-1">
+                <i class="fa-solid fa-shield-halved text-mactur-yellow"></i> Segurança do Trabalho
+              </div>
+              <div class="bg-black/60 px-2 py-1 rounded border border-mactur-yellow/30 flex items-center gap-1">
+                <i class="fa-solid fa-hard-hat text-mactur-yellow"></i> Uso de EPIs
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2: NOSSA FROTA -->
+        <div class="slide" data-slide="2">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://raw.githubusercontent.com/macturbh/assets/main/WhatsApp%20Image%202026-03-12%20at%2010.02.38.jpeg');">
+            <div class="absolute inset-0 bg-gradient-to-t from-mactur-dark via-mactur-dark/90 to-black/60"></div>
+          </div>
+
+          <div class="relative z-20 h-full flex flex-col justify-center pt-8">
+            <span class="text-mactur-yellow font-black uppercase tracking-wider text-[10px] mb-1">Compromisso Operacional</span>
+            <h2 class="text-xl font-black text-white mb-3 text-shadow-hero">Nossa Frota, <span class="text-mactur-yellow">Nossa Responsabilidade</span></h2>
+
+            <div class="grid grid-cols-1 gap-2 mb-2">
+              <div class="glass-panel p-2.5 rounded-xl flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-mactur-yellow/20 flex items-center justify-center text-mactur-yellow text-sm font-black flex-shrink-0"><i class="fa-solid fa-bus"></i></div>
+                <p class="text-[11px] font-bold text-white leading-tight">Nossa frota está em movimento todos os dias pelas estradas do país.</p>
+              </div>
+              <div class="glass-panel p-2.5 rounded-xl flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-mactur-yellow/20 flex items-center justify-center text-mactur-yellow text-sm font-black flex-shrink-0"><i class="fa-solid fa-users"></i></div>
+                <p class="text-[11px] font-bold text-white leading-tight">Cada veículo representa uma imensa responsabilidade com vidas e famílias.</p>
+              </div>
+            </div>
+
+            <div class="glass-panel p-3 rounded-xl border-b-4 border-mactur-yellow bg-mactur-green/70 text-center">
+              <p class="text-xs font-black text-mactur-yellow">A segurança começa antes mesmo de ligar o motor!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: SEGURANÇA NO TRÂNSITO -->
+        <div class="slide" data-slide="3">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://raw.githubusercontent.com/macturbh/assets/main/WhatsApp%20Image%202026-02-09%20at%2013.08.58.jpeg');">
+            <div class="absolute inset-0 bg-gradient-to-r from-mactur-dark via-mactur-dark/95 to-transparent"></div>
+          </div>
+
+          <div class="relative z-20 h-full flex flex-col justify-center pt-8">
+            <span class="text-mactur-yellow font-black uppercase tracking-wider text-[10px] mb-1"><i class="fa-solid fa-road mr-1"></i>Direção Defensiva</span>
+            <h2 class="text-xl font-black text-white mb-3 text-shadow-hero">Segurança no <span class="text-mactur-yellow">Trânsito</span></h2>
+
+            <div class="grid grid-cols-2 gap-1.5 mb-2">
+              <div class="glass-panel p-2 rounded-lg flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-mactur-yellow text-mactur-green font-black text-[10px] flex items-center justify-center flex-shrink-0">1</span>
+                <p class="text-[10px] font-bold text-white leading-tight">Respeite a velocidade.</p>
+              </div>
+              <div class="glass-panel p-2 rounded-lg flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-mactur-yellow text-mactur-green font-black text-[10px] flex items-center justify-center flex-shrink-0">2</span>
+                <p class="text-[10px] font-bold text-white leading-tight">Use o cinto sempre.</p>
+              </div>
+              <div class="glass-panel p-2 rounded-lg flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-red-600 text-white font-black text-[10px] flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-mobile-slash"></i></span>
+                <p class="text-[10px] font-bold text-white leading-tight">Sem celular ao dirigir.</p>
+              </div>
+              <div class="glass-panel p-2 rounded-lg flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-mactur-yellow text-mactur-green font-black text-[10px] flex items-center justify-center flex-shrink-0">4</span>
+                <p class="text-[10px] font-bold text-white leading-tight">Siga a sinalização.</p>
+              </div>
+            </div>
+
+            <div class="bg-mactur-green/90 border border-mactur-yellow p-2.5 rounded-xl text-center">
+              <p class="text-[11px] font-black text-mactur-yellow"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Faça inspeções antes de iniciar a viagem!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: SEGURANÇA NA GARAGEM -->
+        <div class="slide" data-slide="4">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://raw.githubusercontent.com/macturbh/assets/main/WhatsApp%20Image%202026-03-10%20at%2015.59.46.jpeg');">
+            <div class="absolute inset-0 bg-gradient-to-r from-mactur-dark via-mactur-dark/95 to-black/70"></div>
+          </div>
+
+          <div class="relative z-20 h-full flex flex-col justify-center pt-8">
+            <span class="text-mactur-yellow font-black uppercase tracking-wider text-[10px] mb-1">Ambiente Operacional</span>
+            <h2 class="text-xl font-black text-white mb-2 text-shadow-hero">Segurança na <span class="text-mactur-yellow">Garagem</span></h2>
+
+            <div class="glass-panel p-3 rounded-xl mb-2">
+              <ul class="space-y-1.5 text-[11px] font-bold text-gray-100">
+                <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-mactur-yellow"></i> Mantenha a oficina organizada.</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-mactur-yellow"></i> Respeite as áreas de circulação.</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-mactur-yellow"></i> Evite improvisações em ferramentas.</li>
+                <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-mactur-yellow"></i> Comunique situações de risco.</li>
+              </ul>
+            </div>
+
+            <div class="bg-mactur-yellow text-mactur-green p-2 rounded-lg font-black text-center text-xs uppercase tracking-wider">
+              Ambiente seguro é responsabilidade de todos!
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 5: USO DE EPIS -->
+        <div class="slide" data-slide="5">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://raw.githubusercontent.com/macturbh/assets/main/WhatsApp%20Image%202026-04-01%20at%2008.49.48.jpeg');">
+            <div class="absolute inset-0 bg-gradient-to-t from-mactur-dark via-mactur-dark/95 to-black/60"></div>
+          </div>
+
+          <div class="relative z-20 h-full flex flex-col justify-center pt-8">
+            <span class="text-mactur-yellow font-black uppercase tracking-wider text-[10px] mb-1">Proteção Individual</span>
+            <h2 class="text-xl font-black text-white mb-2 text-shadow-hero">EPI: <span class="text-mactur-yellow">USE E PRESERVE!</span></h2>
+
+            <div class="grid grid-cols-3 gap-1.5 mb-3 text-center">
+              <div class="glass-panel p-2 rounded-lg border-t-2 border-mactur-yellow"><i class="fa-solid fa-hard-hat text-lg text-mactur-yellow block mb-0.5"></i><span class="text-[9px] font-bold text-white">Capacete</span></div>
+              <div class="glass-panel p-2 rounded-lg border-t-2 border-mactur-yellow"><i class="fa-solid fa-glasses text-lg text-mactur-yellow block mb-0.5"></i><span class="text-[9px] font-bold text-white">Óculos</span></div>
+              <div class="glass-panel p-2 rounded-lg border-t-2 border-mactur-yellow"><i class="fa-solid fa-hand text-lg text-mactur-yellow block mb-0.5"></i><span class="text-[9px] font-bold text-white">Luvas</span></div>
+              <div class="glass-panel p-2 rounded-lg border-t-2 border-mactur-yellow"><i class="fa-solid fa-shoe-prints text-lg text-mactur-yellow block mb-0.5"></i><span class="text-[9px] font-bold text-white">Botas</span></div>
+              <div class="glass-panel p-2 rounded-lg border-t-2 border-mactur-yellow"><i class="fa-solid fa-headphones text-lg text-mactur-yellow block mb-0.5"></i><span class="text-[9px] font-bold text-white">Auricular</span></div>
+              <div class="glass-panel p-2 rounded-lg border-t-2 border-mactur-yellow"><i class="fa-solid fa-vest text-lg text-mactur-yellow block mb-0.5"></i><span class="text-[9px] font-bold text-white">Colete</span></div>
+            </div>
+
+            <div class="glass-panel p-2.5 rounded-xl text-center border border-mactur-yellow">
+              <p class="text-xs font-black text-white">Seu EPI protege você. <span class="text-mactur-yellow">Sua atitude protege a todos!</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 6: NOVEMBRO AZUL -->
+        <div class="slide" data-slide="6">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://raw.githubusercontent.com/macturbh/assets/main/WhatsApp%20Image%202026-03-12%20at%2010.02.38.jpeg');">
+            <div class="absolute inset-0 bg-gradient-to-r from-mactur-blueDark/95 via-mactur-blue/90 to-black/80"></div>
+          </div>
+
+          <div class="relative z-20 h-full flex flex-col justify-center pt-8">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="fa-solid fa-ribbon text-2xl text-mactur-blueLight"></i>
+              <span class="text-mactur-blueLight font-black text-xs uppercase tracking-wider">Campanha Oficial</span>
+            </div>
+            <h2 class="text-2xl font-black text-white mb-2 text-shadow-hero">NOVEMBRO <span class="text-mactur-blueLight">AZUL</span></h2>
+            <div class="text-sm font-black text-mactur-yellow mb-3">Cuidar da saúde também é coisa de homem!</div>
+
+            <div class="glass-blue p-3 rounded-xl border-l-4 border-mactur-blueLight">
+              <p class="text-xs font-bold text-white leading-relaxed">O mês de conscientização nos lembra da importância da <span class="text-mactur-blueLight font-black">prevenção</span> e do <span class="text-mactur-blueLight font-black">diagnóstico precoce</span>.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 7: ENCERRAMENTO -->
+        <div class="slide" data-slide="7">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://raw.githubusercontent.com/macturbh/assets/main/WhatsApp%20Image%202026-01-12%20at%2014.43.07.jpeg');">
+            <div class="absolute inset-0 bg-gradient-to-t from-mactur-dark via-mactur-green/95 to-black/80"></div>
+          </div>
+
+          <div class="relative z-20 h-full flex flex-col justify-center items-center text-center pt-6">
+            <h2 class="text-2xl font-black text-mactur-yellow mb-2 text-shadow-hero">SEGURANÇA QUE NOS MOVE!</h2>
+            <p class="text-xs font-black text-white mb-4">Cuide de você. Proteja seus colegas. Preserve vidas!</p>
+
+            <div class="glass-panel p-3 rounded-xl border border-mactur-yellow mb-3 max-w-xs">
+              <p class="text-sm font-black text-mactur-yellow">"Nossa maior conquista é voltar para casa em segurança."</p>
+            </div>
+
+            <div class="flex items-center gap-3 text-[10px] font-bold text-gray-200">
+              <span class="flex items-center gap-1"><i class="fa-solid fa-phone text-mactur-yellow"></i> (19) 99940-0991</span>
+              <span class="flex items-center gap-1"><i class="fa-solid fa-globe text-mactur-yellow"></i> macturismo.com.br</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTROLES DO RODAPÉ DO CARROSSEL -->
+        <div class="absolute bottom-0 left-0 right-0 z-40 p-2 flex justify-between items-center bg-gradient-to-t from-black/95 to-transparent">
+          <div id="slideIndicators" class="flex items-center gap-1.5"></div>
+          <div class="flex items-center gap-1">
+            <button id="btnPrev" class="w-6 h-6 rounded bg-black/60 text-white text-xs flex items-center justify-center hover:bg-mactur-green"><i class="fa-solid fa-chevron-left"></i></button>
+            <button id="btnPlayPause" class="w-6 h-6 rounded bg-mactur-yellow text-mactur-green text-xs font-black flex items-center justify-center"><i id="iconPlayPause" class="fa-solid fa-pause"></i></button>
+            <button id="btnNext" class="w-6 h-6 rounded bg-black/60 text-white text-xs flex items-center justify-center hover:bg-mactur-green"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // CONFIGURAÇÃO SUPABASE
+    const SUPABASE_URL = 'https://lniuhtujzobhfpvsbzic.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxuaXVodHVqem9iaGZwdnNiemljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNDk2OTYsImV4cCI6MjEwNzYyNTY5Nn0.wGLx3arveAzSyNwLNmc0V3p2P3MJpo-EUZRElEq7CRQ';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let usuarioLogado = null;
+    const HOJE_OFICIAL = '10/11/2026'; // Data oficial do sistema
+
+    // Relógio e Data em tempo real no canto superior esquerdo (Header)
+    function atualizarRelogioDataHeader() {
+      const agora = new Date();
+      document.getElementById('relogioHora').innerText = agora.toLocaleTimeString('pt-BR');
+      
+      const opcoesData = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      document.getElementById('relogioData').innerText = agora.toLocaleDateString('pt-BR', opcoesData);
+    }
+    setInterval(atualizarRelogioDataHeader, 1000);
+    atualizarRelogioDataHeader();
+
+    // Login de Usuário
+    async function realizarLogin() {
+      const userInp = document.getElementById('loginUsuario').value.trim().toLowerCase();
+      const passInp = document.getElementById('loginSenha').value.trim();
+      const loginError = document.getElementById('loginError');
+
+      loginError.style.display = 'none';
+      if (!userInp || !passInp) {
+        loginError.innerText = 'Informe o usuário e a senha.';
+        loginError.style.display = 'block';
+        return;
+      }
+
+      try {
+        const { data: usuarios, error } = await supabaseClient.from('usuarios').select('*');
+        if (error) throw error;
+
+        const user = usuarios?.find(u =>
+          u.nome?.trim().toLowerCase() === userInp ||
+          u.cpf?.replace(/[^\d]/g, '') === userInp.replace(/[^\d]/g, '')
+        );
+
+        if (!user) {
+          loginError.innerText = 'Usuário não encontrado.';
+          loginError.style.display = 'block';
+          return;
+        }
+
+        usuarioLogado = user;
+        localStorage.setItem('mactur_garagem_user', JSON.stringify(user));
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('userInfoDisplay').innerHTML = `<i class="fa-solid fa-circle-user" style="color:var(--mactur-green)"></i> <span>${usuarioLogado.nome}</span>`;
+        await carregarDadosGaragem();
+      } catch (erro) {
+        loginError.innerText = 'Erro de login: ' + erro.message;
+        loginError.style.display = 'block';
+      }
+    }
+
+    function realizarLogout() {
+      localStorage.removeItem('mactur_garagem_user');
+      location.reload();
+    }
+
+    // Registros de Manutenção Preventiva
+    const rawChecklistData = [
+      { dataHora: '10/11/2026 08:15:00', motorista: 'VENCESLAU LEOPOLDO NORONHA', prefixo: '86000', solicitacao: 'Revisão urgente do sistema de freios' },
+      { dataHora: '10/11/2026 09:30:12', motorista: 'RENY MANSUR NAGEM', prefixo: '71004', solicitacao: 'Substituição de lâmpada farol esquerdo' },
+      { dataHora: '06/11/2026 06:57:07', motorista: 'JONATHA HENRIQUE PARREIRAS VIEIRA', prefixo: '78004', solicitacao: 'Veículo abaixando água constantemente' },
+      { dataHora: '05/11/2026 04:27:44', motorista: 'MARCELO CASSIMIRO SILVA', prefixo: '76004', solicitacao: 'Pino de centro quebrado' },
+      { dataHora: '04/11/2026 04:44:28', motorista: 'RICARDO FELIPE SPINA', prefixo: '23005', solicitacao: 'Trocar lonas de freio e trava de salão' },
+      { dataHora: '03/11/2026 04:03:11', motorista: 'TIAGO DUTRA DE CARVALHO', prefixo: '74003', solicitacao: 'Roncando diferencial e barulho na transmissão' }
+    ];
+
+    function parseNumeroBr(valor) {
+      if (valor === null || valor === undefined || valor === '') return 0;
+      if (typeof valor === 'number') return valor;
+      let str = valor.toString().trim().replace('R$', '').trim();
+      if (str.includes(',')) {
+        str = str.replace(/\./g, '').replace(',', '.');
+      } else {
+        const parts = str.split('.');
+        if (parts.length > 2) {
+          str = str.replace(/\./g, '');
+        } else if (parts.length === 2 && parts[1].length === 3 && parseInt(parts[0]) < 1000) {
+          str = str.replace('.', '');
+        }
+      }
+      return parseFloat(str) || 0;
+    }
+
+    async function buscarTodosPaginated(tabela) {
+      let rows = [];
+      let step = 1000;
+      let from = 0;
+      let keepGoing = true;
+
+      while (keepGoing) {
+        const { data, error } = await supabaseClient
+          .from(tabela)
+          .select('*')
+          .range(from, from + step - 1);
+
+        if (error) {
+          console.error(`Erro ao buscar ${tabela}:`, error);
+          break;
+        }
+
+        if (data && data.length > 0) {
+          rows = rows.concat(data);
+          from += step;
+          if (data.length < step) keepGoing = false;
+        } else {
+          keepGoing = false;
+        }
+      }
+      return rows;
+    }
+
+    async function carregarDadosGaragem() {
+      try {
+        renderizarManutencao();
+
+        const [abastecimentosData, resVeiculos, resUsuarios] = await Promise.all([
+          buscarTodosPaginated('abastecimentos'),
+          supabaseClient.from('veiculos').select('*'),
+          supabaseClient.from('usuarios').select('*')
+        ]);
+
+        const mapVeiculos = {};
+        (resVeiculos.data || []).forEach(v => {
+          mapVeiculos[v.id] = v;
+          if (v.prefixo) mapVeiculos[String(v.prefixo).trim()] = v;
+        });
+
+        const mapUsuarios = {};
+        (resUsuarios.data || []).forEach(u => {
+          mapUsuarios[u.id] = u;
+          if (u.nome) mapUsuarios[String(u.nome).trim()] = u;
+        });
+
+        const abastecimentosMapeados = (abastecimentosData || []).map(r => {
+          const rawData = r.data_hora || r.created_at || '';
+          const veic = mapVeiculos[r.veiculo_id] || {};
+          const user = mapUsuarios[r.motorista_id || r.usuario_id] || {};
+
+          return {
+            dataHoraOriginal: rawData,
+            motorista: String(user.nome || r.motorista || 'NÃO INFORMADO').trim(),
+            prefixo: String(veic.prefixo || r.prefixo || r.veiculo_id || 'N/D').trim(),
+            kmAtual: r.km_atual || '',
+            litros: parseNumeroBr(r.litros),
+            media: parseNumeroBr(r.media)
+          };
+        });
+
+        renderizarAbastecimentos(abastecimentosMapeados);
+
+      } catch (err) {
+        console.error("Erro ao carregar dados do Supabase:", err);
+      }
+    }
+
+    function renderizarManutencao() {
+      const tbody = document.getElementById('tbodyManutencao');
+      let qtdAberto = 0, qtdAndamento = 0, qtdFechada = 0;
+
+      tbody.innerHTML = rawChecklistData.map(item => {
+        const dataApenas = item.dataHora.split(' ')[0];
+        let status = 'CONCLUIDO';
+
+        // REGRA DE OS: Somente solicitações abertas HOJE (10/11/2026) são "ABERTO"
+        if (dataApenas === HOJE_OFICIAL) {
+          status = 'ABERTO';
+          qtdAberto++;
+        } else if (item.solicitacao !== 'Checklist OK') {
+          status = 'EM ANDAMENTO';
+          qtdAndamento++;
+        } else {
+          status = 'CONCLUIDO';
+          qtdFechada++;
+        }
+
+        const classeStatus = status === 'ABERTO' ? 'st-aberto' : status === 'EM ANDAMENTO' ? 'st-andamento' : 'st-concluido';
+
+        return `
+          <tr>
+            <td>${dataApenas}<br><small style="color:#666">${item.dataHora.split(' ')[1] || ''}</small></td>
+            <td><b>${item.prefixo}</b></td>
+            <td>${item.motorista.split(' ')[0]} ${item.motorista.split(' ')[1] || ''}</td>
+            <td>${item.solicitacao}</td>
+            <td><span class="badge-status ${classeStatus}">${status}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('kpiOsAberto').innerText = qtdAberto;
+      document.getElementById('kpiOsAndamento').innerText = qtdAndamento;
+      document.getElementById('kpiOsFechadas').innerText = qtdFechada;
+    }
+
+    function renderizarAbastecimentos(dados) {
+      const tbody = document.getElementById('tbodyAbastecimentos');
+      let totalLitrosMes = 0;
+      let totalAbastMes = 0;
+      const mesAtual = new Date().getMonth() + 1;
+
+      dados.sort((a,b) => new Date(b.dataHoraOriginal).getTime() - new Date(a.dataHoraOriginal).getTime());
+
+      dados.forEach(r => {
+        if (r.dataHoraOriginal) {
+          const d = new Date(r.dataHoraOriginal);
+          if (!isNaN(d.getTime()) && (d.getMonth() + 1) === mesAtual) {
+            totalLitrosMes += r.litros;
+            totalAbastMes++;
+          }
+        }
+      });
+
+      tbody.innerHTML = dados.slice(0, 100).map(r => `
+        <tr>
+          <td>${r.dataHoraOriginal ? new Date(r.dataHoraOriginal).toLocaleString('pt-BR') : '-'}</td>
+          <td><b>${r.prefixo}</b></td>
+          <td>${r.motorista}</td>
+          <td>${r.kmAtual || '-'}</td>
+          <td><b>${r.litros > 0 ? r.litros.toFixed(1) + ' L' : '-'}</b></td>
+          <td>${r.media > 0 ? r.media.toFixed(2) : '-'}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="text-align:center;">Nenhum abastecimento encontrado.</td></tr>';
+
+      document.getElementById('kpiQtdAbastMes').innerText = totalAbastMes;
+      document.getElementById('kpiLitrosMes').innerText = `${totalLitrosMes.toLocaleString('pt-BR', {maximumFractionDigits: 0})} L`;
+      document.getElementById('kpiTotalAbastGeral').innerText = dados.length;
+    }
+
+    // LÓGICA DO CARROSSEL DE APRESENTAÇÃO MACTUR
+    function initCarrossel() {
+      const slides = document.querySelectorAll('.slide');
+      const totalSlides = slides.length;
+      let currentSlide = 0;
+      let isPlaying = true;
+      const slideInterval = 12000; // 12 segundos por slide
+      let progressInterval;
+      let progress = 0;
+
+      const progressBar = document.getElementById('progressBar');
+      const btnPlayPause = document.getElementById('btnPlayPause');
+      const iconPlayPause = document.getElementById('iconPlayPause');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnNext = document.getElementById('btnNext');
+      const indicatorsContainer = document.getElementById('slideIndicators');
+      const badgeStatus = document.getElementById('badgeStatus');
+      const badgeText = document.getElementById('badgeText');
+
+      // Gera indicadores de navegabilidade no carrossel
+      slides.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-mactur-yellow transition-all';
+        dot.addEventListener('click', () => goToSlide(idx));
+        indicatorsContainer.appendChild(dot);
+      });
+
+      const indicators = indicatorsContainer.querySelectorAll('button');
+
+      function updateIndicators() {
+        indicators.forEach((dot, idx) => {
+          if (idx === currentSlide) {
+            dot.className = 'w-4 h-1.5 rounded-full bg-mactur-yellow transition-all shadow';
+          } else {
+            dot.className = 'w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-mactur-yellow transition-all';
+          }
+        });
+
+        if (currentSlide === 5) {
+          badgeStatus.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-mactur-blueDark/90 text-mactur-blueLight border border-mactur-blueLight/60 backdrop-blur-md flex items-center gap-1";
+          badgeText.textContent = "NOVEMBRO AZUL";
+        } else {
+          badgeStatus.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-mactur-green/90 text-mactur-yellow border border-mactur-yellow/50 backdrop-blur-md flex items-center gap-1";
+          badgeText.textContent = "SAFETY MACTUR";
+        }
+      }
+
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.remove('active');
+          if (i === index) slide.classList.add('active');
+        });
+        currentSlide = index;
+        updateIndicators();
+        resetProgress();
+      }
+
+      function nextSlide() {
+        showSlide((currentSlide + 1) % totalSlides);
+      }
+
+      function prevSlide() {
+        showSlide((currentSlide - 1 + totalSlides) % totalSlides);
+      }
+
+      function goToSlide(index) {
+        showSlide(index);
+      }
+
+      function startProgress() {
+        clearInterval(progressInterval);
+        progress = 0;
+        const step = 100 / (slideInterval / 100);
+
+        progressInterval = setInterval(() => {
+          if (isPlaying) {
+            progress += step;
+            progressBar.style.width = `${Math.min(progress, 100)}%`;
+            if (progress >= 100) nextSlide();
+          }
+        }, 100);
+      }
+
+      function resetProgress() {
+        progress = 0;
+        progressBar.style.width = '0%';
+        if (isPlaying) startProgress();
+      }
+
+      btnPlayPause.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        iconPlayPause.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+        if (isPlaying) startProgress();
+        else clearInterval(progressInterval);
+      });
+
+      btnNext.addEventListener('click', nextSlide);
+      btnPrev.addEventListener('click', prevSlide);
+
+      showSlide(0);
+      startProgress();
+    }
+
+    window.onload = async () => {
+      try {
+        const s = localStorage.getItem('mactur_garagem_user');
+        if (s) {
+          usuarioLogado = JSON.parse(s);
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('userInfoDisplay').innerHTML = `<i class="fa-solid fa-circle-user" style="color:var(--mactur-green)"></i> <span>${usuarioLogado.nome}</span>`;
+          await carregarDadosGaragem();
+        } else {
+          document.getElementById('loginScreen').style.display = 'flex';
+        }
+      } catch (e) {
+        document.getElementById('loginScreen').style.display = 'flex';
+      }
+
+      initCarrossel();
+    };
+  </script>
+</body>
+</html>
