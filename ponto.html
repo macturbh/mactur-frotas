@@ -439,16 +439,16 @@
             <label><i class="fa-solid fa-route"></i> Tipo de Deslocamento *</label>
             <select id="tipoDeslocamento" class="form-control" required onchange="aoMudarTipoDeslocamento()">
               <option value="">Selecione o tipo de deslocamento...</option>
-              <option value="DESLOCAMENTO INICIO DE LINHA">Deslocamento Início de Linha</option>
-              <option value="DESLOCAMENTO FINAL DE LINHA">Deslocamento Final de Linha</option>
-              <option value="DESLOCAMENTO CASA">Deslocamento Casa</option>
-              <option value="DESLOCAMENTO GARAGEM">Deslocamento Garagem</option>
-              <option value="DESLOCAMENTO MANUTENCAO">Deslocamento Manutenção</option>
-              <option value="DESLOCAMENTO ABASTECIMENTO">Deslocamento Abastecimento</option>
+              <option value="DESLOCAMENTO INICIO DE LINHA">DESLOCAMENTO INICIO DE LINHA</option>
+              <option value="DESLOCAMENTO GARAGEM">DESLOCAMENTO GARAGEM</option>
+              <option value="DESLOCAMENTO MANUNTEÇÃO">DESLOCAMENTO MANUNTEÇÃO</option>
+              <option value="DESLOCAMENTO ABASTECIMENTO">DESLOCAMENTO ABASTECIMENTO</option>
+              <option value="DESLOCAMENTO FINAL DE LINHA">DESLOCAMENTO FINAL DE LINHA</option>
+              <option value="INICIO DE LINHA">INICIO DE LINHA</option>
             </select>
           </div>
 
-          <!-- CAMPOS CONDICIONAIS PARA DESLOCAMENTO DE LINHA -->
+          <!-- CAMPOS CONDICIONAIS PARA INÍCIO DE LINHA E DESLOCAMENTO INICIO DE LINHA -->
           <div id="boxClienteLinha" style="display:none; flex-direction:column; gap:14px; background:#f0f7f2; padding:12px; border-radius:10px; border:1px solid #c8e0cc;">
             <div class="form-group">
               <label><i class="fa-solid fa-building"></i> Cliente *</label>
@@ -511,9 +511,10 @@
               <input type="number" inputmode="numeric" id="pontoKmFinal" class="form-control" placeholder="Informe o KM ao finalizar" required>
             </div>
 
-            <div class="form-group">
-              <label><i class="fa-solid fa-users"></i> Quantidade de Passageiros Transportados *</label>
-              <input type="number" inputmode="numeric" min="0" id="qtdPassageiros" class="form-control" placeholder="Ex: 32 (ou 0 se vazio)" required>
+            <!-- EXIBIDO SOMENTE AO FINALIZAR INICIO DE LINHA -->
+            <div class="form-group" id="boxPassageirosFechamento" style="display:none;">
+              <label><i class="fa-solid fa-users"></i> Nº de Passageiros Transportados *</label>
+              <input type="number" inputmode="numeric" min="0" id="qtdPassageiros" class="form-control" placeholder="Informe a quantidade de passageiros">
             </div>
 
             <button type="submit" id="btnFecharPonto" class="btn-danger">
@@ -599,8 +600,12 @@
 
     let respostasChecklist = {};
 
-    function ehDeslocamentoDeLinha(tipo) {
-      return tipo === 'DESLOCAMENTO INICIO DE LINHA' || tipo === 'DESLOCAMENTO FINAL DE LINHA' || tipo === 'INICIO LINHA';
+    function ehTipoComClienteLinha(tipo) {
+      return tipo === 'INICIO DE LINHA' || tipo === 'DESLOCAMENTO INICIO DE LINHA';
+    }
+
+    function exigePassageirosNoFechamento(tipo) {
+      return tipo === 'INICIO DE LINHA';
     }
 
     window.onload = async () => {
@@ -712,11 +717,11 @@
       );
 
       listaClientes = (resC.data || [])
-        .filter(c => !c.status || String(c.status).toUpperCase() === 'ATIVO')
+        .filter(c => !c.status || String(c.status).toUpperCase() !== 'INATIVO')
         .sort((a, b) => obterNomeRegistro(a).localeCompare(obterNomeRegistro(b), undefined, { numeric: true }));
 
       listaLinhas = (resL.data || [])
-        .filter(l => !l.status || String(l.status).toUpperCase() === 'ATIVO')
+        .filter(l => !l.status || String(l.status).toUpperCase() !== 'INATIVO')
         .sort((a, b) => obterNomeRegistro(a).localeCompare(obterNomeRegistro(b), undefined, { numeric: true }));
 
       const selV = document.getElementById('chkVeiculo');
@@ -871,21 +876,33 @@
         formAbertura.style.display = 'none';
         boxAberto.style.display = 'flex';
 
-        const vObj = listaVeiculos.find(v => v.id == pontoAbertoAtual.veiculo_id);
+        const vObj = listaVeiculos.find(v => String(v.id) === String(pontoAbertoAtual.veiculo_id));
         document.getElementById('lblTripTipo').innerText = pontoAbertoAtual.tipo_deslocamento;
         document.getElementById('lblTripVeiculo').innerText = vObj ? vObj.prefixo : `ID ${pontoAbertoAtual.veiculo_id}`;
         document.getElementById('lblTripHora').innerText = new Date(pontoAbertoAtual.data_hora_abertura).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         document.getElementById('lblTripKmInicial').innerText = `${Number(pontoAbertoAtual.km_inicial).toLocaleString('pt-BR')} KM`;
         document.getElementById('pontoKmFinal').min = pontoAbertoAtual.km_inicial;
 
-        if (ehDeslocamentoDeLinha(pontoAbertoAtual.tipo_deslocamento)) {
-          const cObj = listaClientes.find(c => c.id == pontoAbertoAtual.cliente_id);
-          const lObj = listaLinhas.find(l => l.id == pontoAbertoAtual.linha_id);
+        if (ehTipoComClienteLinha(pontoAbertoAtual.tipo_deslocamento)) {
+          const cObj = listaClientes.find(c => String(c.id) === String(pontoAbertoAtual.cliente_id));
+          const lObj = listaLinhas.find(l => String(l.id) === String(pontoAbertoAtual.linha_id));
           document.getElementById('rowTripCliente').style.display = 'flex';
           document.getElementById('lblTripClienteLinha').innerText = `${cObj ? obterNomeRegistro(cObj) : ''} - ${lObj ? obterNomeRegistro(lObj) : ''}`;
         } else {
           document.getElementById('rowTripCliente').style.display = 'none';
         }
+
+        const boxPass = document.getElementById('boxPassageirosFechamento');
+        const inpPass = document.getElementById('qtdPassageiros');
+        if (exigePassageirosNoFechamento(pontoAbertoAtual.tipo_deslocamento)) {
+          boxPass.style.display = 'flex';
+          inpPass.required = true;
+        } else {
+          boxPass.style.display = 'none';
+          inpPass.required = false;
+          inpPass.value = '';
+        }
+
         return;
       }
 
@@ -902,7 +919,7 @@
         boxBloq.style.display = 'none';
         formAbertura.style.display = 'flex';
 
-        const vObj = listaVeiculos.find(v => v.id == checklistHoje.veiculo_id);
+        const vObj = listaVeiculos.find(v => String(v.id) === String(checklistHoje.veiculo_id));
         const nomeVeiculo = vObj ? vObj.prefixo : `ID ${checklistHoje.veiculo_id}`;
         document.getElementById('lblChecklistResumo').innerText = `Prefixo ${nomeVeiculo} (${checklistHoje.status_geral})`;
         document.getElementById('pontoVeiculoDisplay').value = nomeVeiculo;
@@ -1063,7 +1080,7 @@
       const selC = document.getElementById('selectCliente');
       const selL = document.getElementById('selectLinha');
 
-      if (ehDeslocamentoDeLinha(tipo)) {
+      if (ehTipoComClienteLinha(tipo)) {
         boxCL.style.display = 'flex';
         selC.required = true;
         selL.required = true;
@@ -1077,7 +1094,7 @@
     }
 
     function carregarLinhasDoCliente() {
-      const clienteId = document.getElementById('selectCliente').value;
+      const clienteId = String(document.getElementById('selectCliente').value || '').trim();
       const selL = document.getElementById('selectLinha');
 
       if (!clienteId) {
@@ -1085,7 +1102,7 @@
         return;
       }
 
-      const linhasFiltradas = listaLinhas.filter(l => String(l.cliente_id) === String(clienteId));
+      const linhasFiltradas = listaLinhas.filter(l => String(l.cliente_id ?? '').trim() === clienteId);
       if (linhasFiltradas.length === 0) {
         selL.innerHTML = '<option value="">Nenhuma linha cadastrada para este cliente</option>';
         return;
@@ -1094,7 +1111,8 @@
       selL.innerHTML = '<option value="">Selecione a Linha...</option>' +
         linhasFiltradas.map(l => {
           const nomeLinha = obterNomeRegistro(l);
-          return `<option value="${l.id}">${l.codigo ? l.codigo + ' - ' : ''}${nomeLinha}</option>`;
+          const cod = l.codigo ? `${String(l.codigo).trim()} - ` : '';
+          return `<option value="${l.id}">${cod}${nomeLinha}</option>`;
         }).join('');
     }
 
@@ -1112,12 +1130,12 @@
 
       const tipo = document.getElementById('tipoDeslocamento').value;
       const kmInicial = parseInt(document.getElementById('pontoKmInicial').value);
-      const precisaClienteLinha = ehDeslocamentoDeLinha(tipo);
+      const precisaClienteLinha = ehTipoComClienteLinha(tipo);
       const clienteId = precisaClienteLinha ? parseInt(document.getElementById('selectCliente').value) : null;
       const linhaId = precisaClienteLinha ? parseInt(document.getElementById('selectLinha').value) : null;
 
       if (precisaClienteLinha && (!clienteId || !linhaId)) {
-        alert('Para deslocamento de linha, selecione o Cliente e a Linha.');
+        alert('Selecione o Cliente e a Linha.');
         return;
       }
 
@@ -1164,15 +1182,17 @@
       if (!pontoAbertoAtual) return;
 
       const kmFinal = parseInt(document.getElementById('pontoKmFinal').value);
-      const qtdPassageiros = parseInt(document.getElementById('qtdPassageiros').value);
+      const exigePassageiros = exigePassageirosNoFechamento(pontoAbertoAtual.tipo_deslocamento);
+      const rawPassageiros = document.getElementById('qtdPassageiros').value;
+      const qtdPassageiros = exigePassageiros ? parseInt(rawPassageiros) : null;
 
       if (kmFinal < pontoAbertoAtual.km_inicial) {
         alert(`O KM Final (${kmFinal}) não pode ser menor que o KM Inicial (${pontoAbertoAtual.km_inicial}).`);
         return;
       }
 
-      if (isNaN(qtdPassageiros) || qtdPassageiros < 0) {
-        alert('Informe obrigatoriamente a quantidade de passageiros transportados (use 0 se não houve passageiros).');
+      if (exigePassageiros && (rawPassageiros === '' || isNaN(qtdPassageiros) || qtdPassageiros < 0)) {
+        alert('Ao finalizar INICIO DE LINHA é obrigatório informar a quantidade de passageiros transportados (use 0 se vazio).');
         return;
       }
 
