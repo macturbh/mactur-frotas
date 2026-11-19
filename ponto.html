@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Mactur - Ponto & Checklist Motorista</title>
+
+  <meta name="theme-color" content="#008037">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --mactur-green: #008037;
+      --mactur-green-dark: #00662c;
+      --mactur-yellow: #f1c40f;
+      --bg-dark: #121c14;
+      --card-bg: #ffffff;
+      --text-main: #1c2b1e;
+      --text-muted: #5c705e;
+      --border-color: #d1ded3;
+      --error-red: #e53e3e;
+      --success-bg: #d1fae5;
+      --success-text: #065f46;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 12px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+      overflow: hidden;
+      border-top: 6px solid var(--mactur-yellow);
+      margin-bottom: 30px;
+    }
+
+    .app-header {
+      background: var(--mactur-green);
+      color: white;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-header h2 { font-size: 1.15rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+    .app-header p { font-size: 0.75rem; opacity: 0.9; }
+
+    .user-info-bar {
+      background: #eaf4ed;
+      padding: 10px 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--mactur-green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .btn-logout {
+      background: none;
+      border: none;
+      color: var(--error-red);
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .section-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background-color: #f9fbf9;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--mactur-green);
+      background-color: #fff;
+    }
+
+    .form-control.input-invalid {
+      border-color: var(--error-red) !important;
+      background-color: #fff5f5 !important;
+      color: var(--error-red) !important;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .km-ref-badge {
+      background: #f0f7f2;
+      border: 1px solid #c8e0cc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--mactur-green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-primary {
+      background: var(--mactur-green);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0, 128, 55, 0.3);
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    .btn-primary:hover { background: var(--mactur-green-dark); }
+    .btn-primary:disabled { background: #a0aec0; cursor: not-allowed; box-shadow: none; }
+
+    .btn-yellow {
+      background: var(--mactur-yellow);
+      color: #1c2b1e;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(241, 196, 15, 0.35);
+      width: 100%;
+    }
+
+    .btn-danger {
+      background: var(--error-red);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-outline {
+      background: #f1f5f2;
+      color: var(--text-main);
+      border: 1.5px solid var(--border-color);
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* CARDS DE STATUS */
+    .status-banner {
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .status-banner.pendente {
+      background: #fffbeb;
+      border: 1.5px solid var(--mactur-yellow);
+      color: #92400e;
+    }
+
+    .status-banner.ok {
+      background: var(--success-bg);
+      border: 1.5px solid #34d399;
+      color: var(--success-text);
+    }
+
+    .status-banner h4 { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
+    .status-banner p { font-size: 0.78rem; font-weight: 600; margin-top: 2px; }
+
+    .bloqueio-box {
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 25px 15px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .bloqueio-box i {
+      font-size: 2.2rem;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    /* CHECKLIST ITENS */
+    .checklist-item {
+      background: #f9fbf9;
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .checklist-item-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-toggle {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+      background: white;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-toggle.active-conforme {
+      background: var(--mactur-green);
+      border-color: var(--mactur-green);
+      color: white;
+    }
+
+    .btn-toggle.active-naoconforme {
+      background: var(--error-red);
+      border-color: var(--error-red);
+      color: white;
+    }
+
+    /* VIAGEM ATIVA (PONTO ABERTO) */
+    .active-trip-card {
+      background: #f0fdf4;
+      border: 2px solid var(--mactur-green);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .trip-badge {
+      background: var(--mactur-yellow);
+      color: #1c2b1e;
+      font-weight: 900;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      align-self: flex-start;
+      text-transform: uppercase;
+    }
+
+    .trip-detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      border-bottom: 1px solid #dcfce7;
+      padding-bottom: 6px;
+    }
+
+    .trip-detail-row span { color: var(--text-muted); font-weight: 600; }
+    .trip-detail-row strong { color: var(--text-main); font-weight: 800; }
+
+    .error-msg {
+      color: var(--error-red);
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: none;
+    }
+
+    .alert-obs {
+      background: #fef2f2;
+      border: 1.5px solid var(--error-red);
+      padding: 12px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="app-header">
+      <div>
+        <h2>Mactur Ponto</h2>
+        <p>Checklist & Registro de Jornada</p>
+      </div>
+      <i class="fa-solid fa-bus-simple fa-2x" style="color: var(--mactur-yellow);"></i>
+    </div>
+
+    <!-- 1. TELA DE LOGIN (CPF E SENHA) -->
+    <div id="loginScreen" class="section-body">
+      <form id="formLogin" onsubmit="realizarLogin(event)" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="form-group">
+          <label><i class="fa-solid fa-id-card"></i> CPF do Motorista</label>
+          <input type="text" inputmode="numeric" id="loginCpf" class="form-control" placeholder="Digite apenas os números do CPF" required>
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-lock"></i> Senha</label>
+          <input type="password" id="loginSenha" class="form-control" placeholder="Digite sua senha" required>
+        </div>
+        <button type="submit" id="btnLogin" class="btn-primary">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema
+        </button>
+        <span id="loginError" class="error-msg" style="text-align:center;"></span>
+      </form>
+    </div>
+
+    <!-- 2. TELA PRINCIPAL DO MOTORISTA -->
+    <div id="appScreen" style="display: none;">
+      <div class="user-info-bar">
+        <span><i class="fa-solid fa-user-check"></i> <span id="lblMotoristaNome">--</span></span>
+        <button class="btn-logout" onclick="realizarLogout()"><i class="fa-solid fa-power-off"></i> Sair</button>
+      </div>
+
+      <!-- SUB-TELA A: PAINEL PRINCIPAL (STATUS CHECKLIST + ABERTURA/FECHAMENTO DE PONTO) -->
+      <div id="viewPrincipal" class="section-body">
+
+        <!-- Banner Status do Checklist -->
+        <div id="bannerChecklistPendente" class="status-banner pendente">
+          <div>
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> Checklist Pendente</h4>
+            <p>Realize a vistoria do veículo para liberar o ponto.</p>
+          </div>
+          <button class="btn-yellow" style="width:auto; padding:10px 14px; font-size:0.82rem;" onclick="abrirTelaChecklist()">
+            <i class="fa-solid fa-clipboard-check"></i> Fazer Checklist
+          </button>
+        </div>
+
+        <div id="bannerChecklistOk" class="status-banner ok" style="display:none;">
+          <div>
+            <h4><i class="fa-solid fa-circle-check"></i> Checklist Concluído</h4>
+            <p id="lblChecklistResumo">Veículo vistoriado e liberado.</p>
+          </div>
+          <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.78rem;" onclick="abrirTelaChecklist()">
+            <i class="fa-solid fa-plus"></i> Novo
+          </button>
+        </div>
+
+        <!-- BLOQUEIO ENQUANTO NÃO FIZER CHECKLIST -->
+        <div id="boxPontoBloqueado" class="bloqueio-box">
+          <i class="fa-solid fa-lock"></i>
+          <h4 style="color:#1c2b1e; margin-bottom:6px;">Registro de Ponto Bloqueado</h4>
+          <p style="font-size:0.85rem;">Conforme regra operacional, o primeiro ponto do dia só pode ser registrado após a conclusão do checklist do veículo.</p>
+          <button class="btn-primary" style="margin-top:16px;" onclick="abrirTelaChecklist()">
+            <i class="fa-solid fa-clipboard-list"></i> Iniciar Checklist do Veículo
+          </button>
+        </div>
+
+        <!-- FORMULÁRIO DE ABERTURA DE PONTO (LIBERADO APÓS CHECKLIST) -->
+        <form id="formAberturaPonto" onsubmit="abrirPonto(event)" style="display:none; flex-direction:column; gap:15px;">
+          <h3 style="font-size:1rem; font-weight:900; color:var(--mactur-green); text-transform:uppercase; border-bottom:2px solid var(--mactur-yellow); padding-bottom:6px;">
+            <i class="fa-solid fa-play"></i> Abertura de Ponto / Deslocamento
+          </h3>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-bus"></i> Prefixo do Veículo</label>
+            <input type="text" id="pontoVeiculoDisplay" class="form-control" readonly style="background:#edf2f7;">
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-route"></i> Tipo de Deslocamento *</label>
+            <select id="tipoDeslocamento" class="form-control" required onchange="aoMudarTipoDeslocamento()">
+              <option value="">Selecione o tipo de deslocamento...</option>
+              <option value="DESLOCAMENTO INICIO DE LINHA">Deslocamento Início de Linha</option>
+              <option value="DESLOCAMENTO FINAL DE LINHA">Deslocamento Final de Linha</option>
+              <option value="DESLOCAMENTO CASA">Deslocamento Casa</option>
+              <option value="DESLOCAMENTO GARAGEM">Deslocamento Garagem</option>
+              <option value="DESLOCAMENTO MANUTENCAO">Deslocamento Manutenção</option>
+              <option value="DESLOCAMENTO ABASTECIMENTO">Deslocamento Abastecimento</option>
+            </select>
+          </div>
+
+          <!-- CAMPOS CONDICIONAIS PARA DESLOCAMENTO DE LINHA -->
+          <div id="boxClienteLinha" style="display:none; flex-direction:column; gap:14px; background:#f0f7f2; padding:12px; border-radius:10px; border:1px solid #c8e0cc;">
+            <div class="form-group">
+              <label><i class="fa-solid fa-building"></i> Cliente *</label>
+              <select id="selectCliente" class="form-control" onchange="carregarLinhasDoCliente()">
+                <option value="">Selecione o Cliente...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-map-location-dot"></i> Linha do Cliente *</label>
+              <select id="selectLinha" class="form-control">
+                <option value="">Selecione o cliente primeiro...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-gauge-high"></i> KM Atual (Inicial) *</label>
+            <input type="number" inputmode="numeric" id="pontoKmInicial" class="form-control" placeholder="Informe o KM atual do painel" required oninput="validarKmPontoInicial()">
+            <span id="pontoKmError" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> O KM deve ser igual ou maior que o último registrado (<span id="lblPontoMinKm">0</span> KM)!</span>
+          </div>
+
+          <button type="submit" id="btnAbrirPonto" class="btn-primary">
+            <i class="fa-solid fa-clock"></i> Registrar Abertura de Ponto
+          </button>
+        </form>
+
+        <!-- PAINEL DE PONTO ABERTO (EM ANDAMENTO -> FECHAMENTO) -->
+        <div id="boxPontoAberto" style="display:none; flex-direction:column; gap:16px;">
+          <div class="active-trip-card">
+            <span class="trip-badge"><i class="fa-solid fa-spinner fa-spin"></i> Deslocamento em Andamento</span>
+            <div class="trip-detail-row">
+              <span>Tipo:</span>
+              <strong id="lblTripTipo">--</strong>
+            </div>
+            <div class="trip-detail-row" id="rowTripCliente" style="display:none;">
+              <span>Cliente / Linha:</span>
+              <strong id="lblTripClienteLinha">--</strong>
+            </div>
+            <div class="trip-detail-row">
+              <span>Prefixo:</span>
+              <strong id="lblTripVeiculo">--</strong>
+            </div>
+            <div class="trip-detail-row">
+              <span>Abertura:</span>
+              <strong id="lblTripHora">--</strong>
+            </div>
+            <div class="trip-detail-row" style="border-bottom:none;">
+              <span>KM Inicial:</span>
+              <strong id="lblTripKmInicial">--</strong>
+            </div>
+          </div>
+
+          <form id="formFechamentoPonto" onsubmit="fecharPonto(event)" style="display:flex; flex-direction:column; gap:14px;">
+            <h3 style="font-size:0.95rem; font-weight:900; color:var(--error-red); text-transform:uppercase;">
+              <i class="fa-solid fa-flag-checkered"></i> Encerrar Deslocamento
+            </h3>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-gauge"></i> KM Final *</label>
+              <input type="number" inputmode="numeric" id="pontoKmFinal" class="form-control" placeholder="Informe o KM ao finalizar" required>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-users"></i> Quantidade de Passageiros Transportados *</label>
+              <input type="number" inputmode="numeric" min="0" id="qtdPassageiros" class="form-control" placeholder="Ex: 32 (ou 0 se vazio)" required>
+            </div>
+
+            <button type="submit" id="btnFecharPonto" class="btn-danger">
+              <i class="fa-solid fa-stop-circle"></i> Fechar Ponto / Concluir Viagem
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- SUB-TELA B: FORMULÁRIO DE CHECKLIST OBRIGATÓRIO -->
+      <div id="viewChecklist" class="section-body" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--mactur-yellow); padding-bottom:8px;">
+          <h3 style="font-size:1rem; font-weight:900; color:var(--mactur-green); text-transform:uppercase;">
+            <i class="fa-solid fa-clipboard-check"></i> Vistoria do Veículo
+          </h3>
+          <button type="button" class="btn-outline" style="width:auto; padding:6px 10px; font-size:0.78rem;" onclick="voltarTelaPrincipal()">
+            Voltar
+          </button>
+        </div>
+
+        <form id="formChecklist" onsubmit="salvarChecklist(event)" style="display:flex; flex-direction:column; gap:14px;">
+          <div class="form-group">
+            <label><i class="fa-solid fa-bus"></i> Prefixo do Veículo *</label>
+            <select id="chkVeiculo" class="form-control" required onchange="aoSelecionarVeiculoChecklist()">
+              <option value="">Carregando veículos...</option>
+            </select>
+          </div>
+
+          <div id="boxUltimoKmAbastecimento" class="km-ref-badge" style="display:none;">
+            <span><i class="fa-solid fa-gas-pump"></i> Último KM (Abastecimento):</span>
+            <strong id="lblUltimoKmAbastecimento">0 KM</strong>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-gauge-high"></i> KM da Vistoria *</label>
+            <input type="number" inputmode="numeric" id="chkKm" class="form-control" placeholder="Informe o KM atual" required oninput="validarKmChecklist()">
+            <span id="chkKmError" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> O KM deve ser igual ou maior ao último abastecimento (<span id="lblChkMinKm">0</span> KM)!</span>
+          </div>
+
+          <!-- CONTAINER DOS 8 ITENS OBRIGATÓRIOS -->
+          <div id="listaItensChecklist" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+          <!-- CAMPO DE OBSERVAÇÃO (OBRIGATÓRIO SE HOUVER NÃO CONFORME) -->
+          <div id="boxObservacaoChecklist" class="form-group">
+            <label id="lblObservacaoChecklist"><i class="fa-solid fa-comment-dots"></i> Observações (Opcional)</label>
+            <textarea id="chkObservacao" class="form-control" placeholder="Descreva qualquer avaria ou detalhe encontrado..."></textarea>
+            <span id="obsError" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Como há item "Não Conforme", o preenchimento da observação é obrigatório!</span>
+          </div>
+
+          <button type="submit" id="btnSalvarChecklist" class="btn-primary">
+            <i class="fa-solid fa-check-double"></i> Concluir Checklist e Liberar Ponto
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://lniuhtujzobhfpvsbzic.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxuaXVodHVqem9iaGZwdnNiemljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNDk2OTYsImV4cCI6MjEwNzYyNTY5Nn0.wGLx3arveAzSyNwLNmc0V3p2P3MJpo-EUZRElEq7CRQ';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let motoristaLogado = null;
+    let listaVeiculos = [];
+    let listaClientes = [];
+    let listaLinhas = [];
+    let checklistHoje = null;
+    let pontoAbertoAtual = null;
+    let ultimoKmAbastecimentoAtual = 0;
+
+    const ITENS_VISTORIA = [
+      { key: 'pneus', label: '1. Pneus (Calibragem / Estado)', icon: 'fa-circle-dot' },
+      { key: 'lataria', label: '2. Lataria e Retrovisores', icon: 'fa-bus' },
+      { key: 'nivel_fluidos', label: '3. Níveis de Fluidos (Freio/Direção)', icon: 'fa-oil-can' },
+      { key: 'nivel_oleo', label: '4. Nível de Óleo do Motor', icon: 'fa-droplet' },
+      { key: 'nivel_agua', label: '5. Nível de Água / Arrefecimento', icon: 'fa-temperature-half' },
+      { key: 'iluminacao_sinalizacao', label: '6. Iluminação e Sinalização', icon: 'fa-lightbulb' },
+      { key: 'limpadores', label: '7. Limpadores de Para-brisa', icon: 'fa-cloud-rain' },
+      { key: 'limpeza_organizacao', label: '8. Limpeza e Organização do Carro', icon: 'fa-broom' }
+    ];
+
+    let respostasChecklist = {};
+
+    function ehDeslocamentoDeLinha(tipo) {
+      return tipo === 'DESLOCAMENTO INICIO DE LINHA' || tipo === 'DESLOCAMENTO FINAL DE LINHA' || tipo === 'INICIO LINHA';
+    }
+
+    window.onload = async () => {
+      renderizarItensChecklist();
+      const saved = localStorage.getItem('mactur_motorista_ponto');
+      if (saved) {
+        motoristaLogado = JSON.parse(saved);
+        await iniciarSessaoMotorista();
+      }
+    };
+
+    async function realizarLogin(e) {
+      e.preventDefault();
+      const cpfInput = document.getElementById('loginCpf').value.replace(/\D/g, '');
+      const senhaInput = document.getElementById('loginSenha').value.trim();
+      const errBox = document.getElementById('loginError');
+      const btn = document.getElementById('btnLogin');
+
+      errBox.style.display = 'none';
+      if (!cpfInput || !senhaInput) {
+        errBox.innerText = 'Preencha o CPF e a senha.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
+
+      try {
+        const { data: usuarios, error } = await _supabase.from('usuarios').select('*');
+        if (error) throw error;
+
+        const user = (usuarios || []).find(u => {
+          const cpfBanco = (u.cpf || '').replace(/\D/g, '');
+          return cpfBanco === cpfInput;
+        });
+
+        if (!user) {
+          errBox.innerText = 'CPF não encontrado no cadastro.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        if ((user.status || 'ATIVO').toUpperCase() === 'INATIVO') {
+          errBox.innerText = 'Usuário inativo. Procure a garagem.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        const senhaBanco = String(user.senha || user.senha_hash || '').trim();
+        if (senhaBanco !== senhaInput) {
+          errBox.innerText = 'Senha incorreta.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        motoristaLogado = user;
+        localStorage.setItem('mactur_motorista_ponto', JSON.stringify(user));
+        await iniciarSessaoMotorista();
+
+      } catch (err) {
+        errBox.innerText = 'Erro de conexão: ' + err.message;
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema';
+      }
+    }
+
+    function realizarLogout() {
+      localStorage.removeItem('mactur_motorista_ponto');
+      location.reload();
+    }
+
+    async function iniciarSessaoMotorista() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+      document.getElementById('lblMotoristaNome').innerText = motoristaLogado.nome;
+
+      await carregarDadosBase();
+      await verificarEstadoOperacional();
+    }
+
+    function obterNomeRegistro(item) {
+      if (!item) return '';
+      const val = item.nome ?? item.cliente ?? item.linha ?? item.descricao ?? item.razao_social ?? `Registro #${item.id}`;
+      return String(val).trim();
+    }
+
+    async function carregarDadosBase() {
+      const [resV, resC, resL] = await Promise.all([
+        _supabase.from('veiculos').select('*'),
+        _supabase.from('clientes').select('*'),
+        _supabase.from('linhas').select('*')
+      ]);
+
+      if (resC.error) console.error('Erro ao carregar clientes:', resC.error.message);
+      if (resL.error) console.error('Erro ao carregar linhas:', resL.error.message);
+
+      let veiculosFiltrados = (resV.data || []).filter(v => (v.status || 'ATIVO').toUpperCase() === 'ATIVO');
+
+      if (motoristaLogado && motoristaLogado.garagem_id) {
+        const garagemMotorista = String(motoristaLogado.garagem_id);
+        veiculosFiltrados = veiculosFiltrados.filter(v => String(v.garagem_id) === garagemMotorista);
+      }
+
+      listaVeiculos = veiculosFiltrados.sort((a, b) =>
+        String(a.prefixo || '').localeCompare(String(b.prefixo || ''), undefined, { numeric: true })
+      );
+
+      listaClientes = (resC.data || [])
+        .filter(c => !c.status || String(c.status).toUpperCase() === 'ATIVO')
+        .sort((a, b) => obterNomeRegistro(a).localeCompare(obterNomeRegistro(b), undefined, { numeric: true }));
+
+      listaLinhas = (resL.data || [])
+        .filter(l => !l.status || String(l.status).toUpperCase() === 'ATIVO')
+        .sort((a, b) => obterNomeRegistro(a).localeCompare(obterNomeRegistro(b), undefined, { numeric: true }));
+
+      const selV = document.getElementById('chkVeiculo');
+      if (listaVeiculos.length === 0) {
+        selV.innerHTML = '<option value="">Nenhum veículo disponível na sua garagem</option>';
+      } else {
+        selV.innerHTML = '<option value="">Selecione o Prefixo...</option>' +
+          listaVeiculos.map(v => `<option value="${v.id}">${v.prefixo}</option>`).join('');
+      }
+
+      const selC = document.getElementById('selectCliente');
+      if (listaClientes.length === 0) {
+        selC.innerHTML = '<option value="">Nenhum cliente cadastrado</option>';
+      } else {
+        selC.innerHTML = '<option value="">Selecione o Cliente...</option>' +
+          listaClientes.map(c => `<option value="${c.id}">${obterNomeRegistro(c)}</option>`).join('');
+      }
+    }
+
+    async function buscarUltimoKmVeiculo(veiculoId) {
+      if (!veiculoId) return 0;
+      try {
+        const { data, error } = await _supabase
+          .from('abastecimentos')
+          .select('km_atual')
+          .eq('veiculo_id', veiculoId)
+          .order('km_atual', { ascending: false })
+          .limit(1);
+
+        if (!error && data && data.length > 0) {
+          return Number(data[0].km_atual) || 0;
+        }
+      } catch (err) {
+        console.warn('Erro ao buscar último KM de abastecimento:', err);
+      }
+      return 0;
+    }
+
+    async function aoSelecionarVeiculoChecklist() {
+      const veiculoId = document.getElementById('chkVeiculo').value;
+      const boxRef = document.getElementById('boxUltimoKmAbastecimento');
+      const lblRef = document.getElementById('lblUltimoKmAbastecimento');
+      const inputKm = document.getElementById('chkKm');
+
+      if (!veiculoId) {
+        ultimoKmAbastecimentoAtual = 0;
+        boxRef.style.display = 'none';
+        inputKm.removeAttribute('min');
+        validarKmChecklist();
+        return;
+      }
+
+      lblRef.innerText = 'Consultando...';
+      boxRef.style.display = 'flex';
+
+      ultimoKmAbastecimentoAtual = await buscarUltimoKmVeiculo(veiculoId);
+
+      if (ultimoKmAbastecimentoAtual > 0) {
+        lblRef.innerText = `${ultimoKmAbastecimentoAtual.toLocaleString('pt-BR')} KM`;
+        inputKm.min = ultimoKmAbastecimentoAtual;
+      } else {
+        lblRef.innerText = 'Sem registro anterior';
+        inputKm.removeAttribute('min');
+      }
+
+      validarKmChecklist();
+    }
+
+    function validarKmChecklist() {
+      const inputKm = document.getElementById('chkKm');
+      const errKm = document.getElementById('chkKmError');
+      const btnSalvar = document.getElementById('btnSalvarChecklist');
+      const kmDigitado = Number(inputKm.value) || 0;
+
+      if (ultimoKmAbastecimentoAtual > 0 && kmDigitado > 0 && kmDigitado < ultimoKmAbastecimentoAtual) {
+        inputKm.classList.add('input-invalid');
+        document.getElementById('lblChkMinKm').innerText = ultimoKmAbastecimentoAtual.toLocaleString('pt-BR');
+        errKm.style.display = 'block';
+        btnSalvar.disabled = true;
+        return false;
+      } else {
+        inputKm.classList.remove('input-invalid');
+        errKm.style.display = 'none';
+        btnSalvar.disabled = false;
+        return true;
+      }
+    }
+
+    function validarKmPontoInicial() {
+      const inputKm = document.getElementById('pontoKmInicial');
+      const errKm = document.getElementById('pontoKmError');
+      const btnAbrir = document.getElementById('btnAbrirPonto');
+      const kmDigitado = Number(inputKm.value) || 0;
+      const minKm = Math.max(ultimoKmAbastecimentoAtual, checklistHoje ? Number(checklistHoje.km_vistoria) || 0 : 0);
+
+      if (minKm > 0 && kmDigitado > 0 && kmDigitado < minKm) {
+        inputKm.classList.add('input-invalid');
+        document.getElementById('lblPontoMinKm').innerText = minKm.toLocaleString('pt-BR');
+        errKm.style.display = 'block';
+        btnAbrir.disabled = true;
+        return false;
+      } else {
+        inputKm.classList.remove('input-invalid');
+        errKm.style.display = 'none';
+        btnAbrir.disabled = false;
+        return true;
+      }
+    }
+
+    async function verificarEstadoOperacional() {
+      const inicioHoje = new Date();
+      inicioHoje.setHours(0, 0, 0, 0);
+
+      const { data: chks } = await _supabase
+        .from('checklists_veiculos')
+        .select('*')
+        .eq('motorista_id', motoristaLogado.id)
+        .gte('data_hora', inicioHoje.toISOString())
+        .order('id', { ascending: false })
+        .limit(1);
+
+      checklistHoje = (chks && chks.length > 0) ? chks[0] : null;
+
+      if (checklistHoje && checklistHoje.veiculo_id) {
+        ultimoKmAbastecimentoAtual = await buscarUltimoKmVeiculo(checklistHoje.veiculo_id);
+      }
+
+      const { data: pontosAbertos } = await _supabase
+        .from('registros_ponto')
+        .select('*')
+        .eq('motorista_id', motoristaLogado.id)
+        .eq('status', 'ABERTO')
+        .order('id', { ascending: false })
+        .limit(1);
+
+      pontoAbertoAtual = (pontosAbertos && pontosAbertos.length > 0) ? pontosAbertos[0] : null;
+
+      atualizarInterfacePrincipal();
+    }
+
+    function atualizarInterfacePrincipal() {
+      const bannerPend = document.getElementById('bannerChecklistPendente');
+      const bannerOk = document.getElementById('bannerChecklistOk');
+      const boxBloq = document.getElementById('boxPontoBloqueado');
+      const formAbertura = document.getElementById('formAberturaPonto');
+      const boxAberto = document.getElementById('boxPontoAberto');
+
+      if (pontoAbertoAtual) {
+        bannerPend.style.display = 'none';
+        bannerOk.style.display = 'flex';
+        boxBloq.style.display = 'none';
+        formAbertura.style.display = 'none';
+        boxAberto.style.display = 'flex';
+
+        const vObj = listaVeiculos.find(v => v.id == pontoAbertoAtual.veiculo_id);
+        document.getElementById('lblTripTipo').innerText = pontoAbertoAtual.tipo_deslocamento;
+        document.getElementById('lblTripVeiculo').innerText = vObj ? vObj.prefixo : `ID ${pontoAbertoAtual.veiculo_id}`;
+        document.getElementById('lblTripHora').innerText = new Date(pontoAbertoAtual.data_hora_abertura).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('lblTripKmInicial').innerText = `${Number(pontoAbertoAtual.km_inicial).toLocaleString('pt-BR')} KM`;
+        document.getElementById('pontoKmFinal').min = pontoAbertoAtual.km_inicial;
+
+        if (ehDeslocamentoDeLinha(pontoAbertoAtual.tipo_deslocamento)) {
+          const cObj = listaClientes.find(c => c.id == pontoAbertoAtual.cliente_id);
+          const lObj = listaLinhas.find(l => l.id == pontoAbertoAtual.linha_id);
+          document.getElementById('rowTripCliente').style.display = 'flex';
+          document.getElementById('lblTripClienteLinha').innerText = `${cObj ? obterNomeRegistro(cObj) : ''} - ${lObj ? obterNomeRegistro(lObj) : ''}`;
+        } else {
+          document.getElementById('rowTripCliente').style.display = 'none';
+        }
+        return;
+      }
+
+      boxAberto.style.display = 'none';
+
+      if (!checklistHoje) {
+        bannerPend.style.display = 'flex';
+        bannerOk.style.display = 'none';
+        boxBloq.style.display = 'block';
+        formAbertura.style.display = 'none';
+      } else {
+        bannerPend.style.display = 'none';
+        bannerOk.style.display = 'flex';
+        boxBloq.style.display = 'none';
+        formAbertura.style.display = 'flex';
+
+        const vObj = listaVeiculos.find(v => v.id == checklistHoje.veiculo_id);
+        const nomeVeiculo = vObj ? vObj.prefixo : `ID ${checklistHoje.veiculo_id}`;
+        document.getElementById('lblChecklistResumo').innerText = `Prefixo ${nomeVeiculo} (${checklistHoje.status_geral})`;
+        document.getElementById('pontoVeiculoDisplay').value = nomeVeiculo;
+
+        const kmBase = Math.max(ultimoKmAbastecimentoAtual, Number(checklistHoje.km_vistoria) || 0);
+        document.getElementById('pontoKmInicial').value = kmBase;
+        document.getElementById('pontoKmInicial').min = kmBase;
+        validarKmPontoInicial();
+      }
+    }
+
+    function renderizarItensChecklist() {
+      const container = document.getElementById('listaItensChecklist');
+      respostasChecklist = {};
+
+      container.innerHTML = ITENS_VISTORIA.map(item => `
+        <div class="checklist-item">
+          <div class="checklist-item-title">
+            <i class="fa-solid ${item.icon}" style="color:var(--mactur-green);"></i> ${item.label}
+          </div>
+          <div class="toggle-group">
+            <button type="button" id="btn_${item.key}_OK" class="btn-toggle" onclick="marcarItemChecklist('${item.key}', 'CONFORME')">
+              <i class="fa-solid fa-check"></i> Conforme
+            </button>
+            <button type="button" id="btn_${item.key}_NOK" class="btn-toggle" onclick="marcarItemChecklist('${item.key}', 'NAO CONFORME')">
+              <i class="fa-solid fa-xmark"></i> Não Conforme
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function marcarItemChecklist(key, valor) {
+      respostasChecklist[key] = valor;
+
+      const btnOk = document.getElementById(`btn_${key}_OK`);
+      const btnNok = document.getElementById(`btn_${key}_NOK`);
+
+      btnOk.classList.remove('active-conforme');
+      btnNok.classList.remove('active-naoconforme');
+
+      if (valor === 'CONFORME') {
+        btnOk.classList.add('active-conforme');
+      } else {
+        btnNok.classList.add('active-naoconforme');
+      }
+
+      validarObrigatoriedadeObservacao();
+    }
+
+    function validarObrigatoriedadeObservacao() {
+      const temNaoConforme = Object.values(respostasChecklist).includes('NAO CONFORME');
+      const boxObs = document.getElementById('boxObservacaoChecklist');
+      const lblObs = document.getElementById('lblObservacaoChecklist');
+      const txtObs = document.getElementById('chkObservacao');
+
+      if (temNaoConforme) {
+        boxObs.classList.add('alert-obs');
+        lblObs.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--error-red);"></i> Observação Obrigatória (Descreva a avaria) *';
+        lblObs.style.color = 'var(--error-red)';
+        txtObs.required = true;
+      } else {
+        boxObs.classList.remove('alert-obs');
+        lblObs.innerHTML = '<i class="fa-solid fa-comment-dots"></i> Observações (Opcional)';
+        lblObs.style.color = 'var(--text-muted)';
+        txtObs.required = false;
+        document.getElementById('obsError').style.display = 'none';
+      }
+      return temNaoConforme;
+    }
+
+    function abrirTelaChecklist() {
+      renderizarItensChecklist();
+      document.getElementById('formChecklist').reset();
+      document.getElementById('boxUltimoKmAbastecimento').style.display = 'none';
+      ultimoKmAbastecimentoAtual = 0;
+      validarKmChecklist();
+      validarObrigatoriedadeObservacao();
+      document.getElementById('viewPrincipal').style.display = 'none';
+      document.getElementById('viewChecklist').style.display = 'flex';
+    }
+
+    function voltarTelaPrincipal() {
+      document.getElementById('viewChecklist').style.display = 'none';
+      document.getElementById('viewPrincipal').style.display = 'flex';
+    }
+
+    async function salvarChecklist(e) {
+      e.preventDefault();
+
+      if (!validarKmChecklist()) {
+        alert(`O KM da vistoria deve ser igual ou maior que o último KM registrado no abastecimento (${ultimoKmAbastecimentoAtual.toLocaleString('pt-BR')} KM).`);
+        return;
+      }
+
+      for (const item of ITENS_VISTORIA) {
+        if (!respostasChecklist[item.key]) {
+          alert(`Por favor, marque "Conforme" ou "Não Conforme" no item: ${item.label}`);
+          return;
+        }
+      }
+
+      const temNaoConforme = validarObrigatoriedadeObservacao();
+      const observacao = document.getElementById('chkObservacao').value.trim();
+
+      if (temNaoConforme && !observacao) {
+        document.getElementById('obsError').style.display = 'block';
+        document.getElementById('chkObservacao').focus();
+        alert('Atenção: Você marcou um ou mais itens como "Não Conforme". Preencha o campo de observação para concluir.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSalvarChecklist');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando Vistoria...';
+
+      try {
+        const payload = {
+          motorista_id: motoristaLogado.id,
+          veiculo_id: parseInt(document.getElementById('chkVeiculo').value),
+          km_vistoria: parseInt(document.getElementById('chkKm').value),
+          pneus: respostasChecklist.pneus,
+          lataria: respostasChecklist.lataria,
+          nivel_fluidos: respostasChecklist.nivel_fluidos,
+          nivel_oleo: respostasChecklist.nivel_oleo,
+          nivel_agua: respostasChecklist.nivel_agua,
+          iluminacao_sinalizacao: respostasChecklist.iluminacao_sinalizacao,
+          limpadores: respostasChecklist.limpadores,
+          limpeza_organizacao: respostasChecklist.limpeza_organizacao,
+          observacao: observacao || null,
+          status_geral: temNaoConforme ? 'COM AVARIA' : 'CONFORME'
+        };
+
+        const { data, error } = await _supabase
+          .from('checklists_veiculos')
+          .insert([payload])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        checklistHoje = data;
+        alert('Checklist registrado com sucesso! Registro de ponto liberado.');
+        voltarTelaPrincipal();
+        atualizarInterfacePrincipal();
+
+      } catch (err) {
+        alert('Erro ao salvar checklist: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Concluir Checklist e Liberar Ponto';
+      }
+    }
+
+    function aoMudarTipoDeslocamento() {
+      const tipo = document.getElementById('tipoDeslocamento').value;
+      const boxCL = document.getElementById('boxClienteLinha');
+      const selC = document.getElementById('selectCliente');
+      const selL = document.getElementById('selectLinha');
+
+      if (ehDeslocamentoDeLinha(tipo)) {
+        boxCL.style.display = 'flex';
+        selC.required = true;
+        selL.required = true;
+      } else {
+        boxCL.style.display = 'none';
+        selC.required = false;
+        selL.required = false;
+        selC.value = '';
+        selL.value = '';
+      }
+    }
+
+    function carregarLinhasDoCliente() {
+      const clienteId = document.getElementById('selectCliente').value;
+      const selL = document.getElementById('selectLinha');
+
+      if (!clienteId) {
+        selL.innerHTML = '<option value="">Selecione o cliente primeiro...</option>';
+        return;
+      }
+
+      const linhasFiltradas = listaLinhas.filter(l => String(l.cliente_id) === String(clienteId));
+      if (linhasFiltradas.length === 0) {
+        selL.innerHTML = '<option value="">Nenhuma linha cadastrada para este cliente</option>';
+        return;
+      }
+
+      selL.innerHTML = '<option value="">Selecione a Linha...</option>' +
+        linhasFiltradas.map(l => {
+          const nomeLinha = obterNomeRegistro(l);
+          return `<option value="${l.id}">${l.codigo ? l.codigo + ' - ' : ''}${nomeLinha}</option>`;
+        }).join('');
+    }
+
+    async function abrirPonto(e) {
+      e.preventDefault();
+      if (!checklistHoje) {
+        alert('Realize o checklist do veículo antes de abrir o ponto.');
+        return;
+      }
+
+      if (!validarKmPontoInicial()) {
+        alert('O KM inicial não pode ser menor que o último KM registrado!');
+        return;
+      }
+
+      const tipo = document.getElementById('tipoDeslocamento').value;
+      const kmInicial = parseInt(document.getElementById('pontoKmInicial').value);
+      const precisaClienteLinha = ehDeslocamentoDeLinha(tipo);
+      const clienteId = precisaClienteLinha ? parseInt(document.getElementById('selectCliente').value) : null;
+      const linhaId = precisaClienteLinha ? parseInt(document.getElementById('selectLinha').value) : null;
+
+      if (precisaClienteLinha && (!clienteId || !linhaId)) {
+        alert('Para deslocamento de linha, selecione o Cliente e a Linha.');
+        return;
+      }
+
+      const btn = document.getElementById('btnAbrirPonto');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
+
+      try {
+        const payload = {
+          motorista_id: motoristaLogado.id,
+          veiculo_id: checklistHoje.veiculo_id,
+          checklist_id: checklistHoje.id,
+          tipo_deslocamento: tipo,
+          cliente_id: clienteId,
+          linha_id: linhaId,
+          km_inicial: kmInicial,
+          status: 'ABERTO'
+        };
+
+        const { data, error } = await _supabase
+          .from('registros_ponto')
+          .insert([payload])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        pontoAbertoAtual = data;
+        document.getElementById('formAberturaPonto').reset();
+        aoMudarTipoDeslocamento();
+        atualizarInterfacePrincipal();
+        alert('Ponto / Deslocamento iniciado com sucesso!');
+
+      } catch (err) {
+        alert('Erro ao abrir ponto: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-clock"></i> Registrar Abertura de Ponto';
+      }
+    }
+
+    async function fecharPonto(e) {
+      e.preventDefault();
+      if (!pontoAbertoAtual) return;
+
+      const kmFinal = parseInt(document.getElementById('pontoKmFinal').value);
+      const qtdPassageiros = parseInt(document.getElementById('qtdPassageiros').value);
+
+      if (kmFinal < pontoAbertoAtual.km_inicial) {
+        alert(`O KM Final (${kmFinal}) não pode ser menor que o KM Inicial (${pontoAbertoAtual.km_inicial}).`);
+        return;
+      }
+
+      if (isNaN(qtdPassageiros) || qtdPassageiros < 0) {
+        alert('Informe obrigatoriamente a quantidade de passageiros transportados (use 0 se não houve passageiros).');
+        return;
+      }
+
+      const btn = document.getElementById('btnFecharPonto');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Encerrando...';
+
+      try {
+        const { error } = await _supabase
+          .from('registros_ponto')
+          .update({
+            data_hora_fechamento: new Date().toISOString(),
+            km_final: kmFinal,
+            qtd_passageiros: qtdPassageiros,
+            status: 'FECHADO'
+          })
+          .eq('id', pontoAbertoAtual.id);
+
+        if (error) throw error;
+
+        if (checklistHoje) {
+          checklistHoje.km_vistoria = kmFinal;
+        }
+
+        pontoAbertoAtual = null;
+        document.getElementById('formFechamentoPonto').reset();
+        atualizarInterfacePrincipal();
+        alert('Deslocamento encerrado com sucesso!');
+
+      } catch (err) {
+        alert('Erro ao fechar ponto: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-stop-circle"></i> Fechar Ponto / Concluir Viagem';
+      }
+    }
+  </script>
+</body>
+</html>
