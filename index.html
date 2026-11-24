@@ -177,7 +177,6 @@
       gap: 15px;
     }
 
-    /* Estilo adicionado para organizar o nome e a função abaixo dele */
     .user-info-text {
       display: flex;
       flex-direction: column;
@@ -346,13 +345,14 @@
       width: 100%;
     }
 
-    .filter-select-group select {
+    .filter-select-group select,
+    .filter-select-group input {
       flex: 1;
       padding: 8px 12px;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      font-size: 1.05rem;
-      font-weight: 800;
+      font-size: 0.95rem;
+      font-weight: 700;
       outline: none;
       background: white;
       color: var(--text-main);
@@ -380,6 +380,15 @@
     .btn-secondary {
       background: #e2e8f0;
       color: #475569;
+    }
+
+    .btn-yellow {
+      background: var(--mactur-yellow);
+      color: #1c2b1e;
+    }
+
+    .btn-yellow:hover {
+      background: var(--mactur-yellow-light);
     }
 
     .btn-edit {
@@ -425,6 +434,22 @@
       text-transform: uppercase;
       font-size: 0.75rem;
     }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .badge-aberto { background: #fef3c7; color: #92400e; }
+    .badge-fechado { background: #d1fae5; color: #065f46; }
+    .badge-sem-ponto { background: #f1f5f9; color: #475569; }
+    .badge-alerta { background: #fee2e2; color: #991b1b; }
 
     .charts-grid-6 {
       display: grid;
@@ -500,6 +525,239 @@
       max-width: 500px;
     }
 
+
+    /* SUB-ABAS DO REGISTRO DE PONTO */
+    .ponto-subtabs-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-subtab {
+      background: #f1f5f2;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-subtab:hover {
+      background: #e2ede5;
+    }
+
+    .btn-subtab.active {
+      background: var(--mactur-green-dark);
+      color: #ffffff;
+      border-color: var(--mactur-green-dark);
+      box-shadow: 0 3px 8px rgba(0, 135, 108, 0.25);
+    }
+
+    .ponto-subview {
+      display: none;
+    }
+
+    .ponto-subview.active {
+      display: block;
+    }
+
+    .live-pulse {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background-color: #16a34a;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+      animation: pulseLive 1.8s infinite;
+    }
+
+    @keyframes pulseLive {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+    }
+
+    .badge-tipo-rota {
+      background: #dbeafe;
+      color: #1e3a8a;
+    }
+
+    .badge-tipo-desloc {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-tipo-outro {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .tempo-vivo-pill {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 900;
+      font-size: 0.9rem;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .tempo-vivo-pill.alerta-longo {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
+    /* FOLHA DE PONTO MENSAL */
+    .folha-ponto-box {
+      background: #ffffff;
+      border: 2px solid var(--mactur-green-dark);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 10px;
+    }
+
+    .folha-header-institucional {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid var(--mactur-yellow);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .folha-empresa-titulo {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--mactur-green-dark);
+      text-transform: uppercase;
+    }
+
+    .folha-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px 18px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 18px;
+      font-size: 0.85rem;
+    }
+
+    .folha-meta-item strong {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      display: block;
+    }
+
+    .folha-meta-item span {
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .tabela-folha {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .tabela-folha th,
+    .tabela-folha td {
+      padding: 6px 6px;
+      font-size: 0.72rem;
+      border: 1px solid #334155;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tabela-folha thead tr.folha-titulo-banner th {
+      background-color: #eef1ee;
+      color: #0f172a;
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      padding: 7px 8px;
+    }
+
+    .tabela-folha thead tr.folha-col-grupo th {
+      background-color: #f4f6f4;
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .tabela-folha thead tr.folha-sub-etapa th {
+      background-color: #ffffff;
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.66rem;
+    }
+
+    .tabela-folha tr.dia-fds {
+      background-color: #f8fafc;
+    }
+
+    .folha-totais-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      margin-bottom: 28px;
+    }
+
+    .folha-total-card {
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--mactur-green);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #f9fbf9;
+    }
+
+    .folha-total-card small {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .folha-total-card strong {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+
+    .assinaturas-grid {
+      display: grid;
+      grid-template-columns: 140px 1fr 1fr;
+      gap: 24px;
+      margin-top: 32px;
+      align-items: end;
+    }
+
+    .linha-assinatura {
+      border-top: 1.5px solid #1c2b1e;
+      padding-top: 6px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-main);
+      text-transform: uppercase;
+    }
+
     /* MODAIS */
     .modal-overlay {
       position: fixed;
@@ -564,6 +822,7 @@
 
     @media (max-width: 950px) {
       .filters-row { grid-template-columns: 1fr; }
+      .assinaturas-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 850px) {
@@ -587,6 +846,47 @@
       header { padding: 15px; }
       .charts-grid-6 { grid-template-columns: 1fr; }
       .col-6, .col-3 { grid-column: span 1; }
+    }
+
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+      body {
+        background: #ffffff !important;
+        display: block !important;
+        color: #000000 !important;
+      }
+      aside,
+      header,
+      #loginScreen,
+      .no-print,
+      .modal-overlay {
+        display: none !important;
+      }
+      .main-content,
+      .container {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      .card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .folha-ponto-box {
+        border: 1px solid #000 !important;
+        padding: 10px !important;
+        border-radius: 0 !important;
+      }
+      .tabela-folha th,
+      .tabela-folha td {
+        padding: 3px 3px !important;
+        font-size: 0.62rem !important;
+        white-space: nowrap !important;
+      }
     }
   </style>
 </head>
@@ -948,11 +1248,331 @@
 
       <!-- REGISTRO DE PONTO -->
       <div id="tab-ponto" class="tab-content">
-        <div class="dev-container">
-          <i class="fa-solid fa-user-clock"></i>
-          <h2>EM DESENVOLVIMENTO</h2>
-          <p>O módulo de Registro de Ponto e PWA dos Motoristas está sendo estruturado e estará disponível em breve.</p>
+
+        <!-- SUB-ABAS DO MÓDULO DE PONTO -->
+        <div class="ponto-subtabs-bar no-print">
+          <button class="btn-subtab active" id="btnSubtabTempoReal" onclick="mudarSubAbaPonto('tempo-real', this)">
+            <span class="live-pulse"></span>
+            <i class="fa-solid fa-satellite-dish"></i> Monitoramento em Tempo Real
+            <span id="badgeQtdAbertosSubtab" style="background:var(--mactur-yellow); color:#1c2b1e; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:900;">0</span>
+          </button>
+          <button class="btn-subtab" id="btnSubtabRelatorioFolha" onclick="mudarSubAbaPonto('relatorio-folha', this)">
+            <i class="fa-solid fa-file-signature"></i> Relatório Mensal e Folha de Ponto
+          </button>
         </div>
+
+        <!-- FILTROS COMPARTILHADOS DE GARAGEM E SERVIÇO -->
+        <div class="no-print">
+          <div class="filters-row">
+            <div class="filter-pills-bar" style="margin-bottom:0;">
+              <label><i class="fa-solid fa-warehouse"></i> Garagem:</label>
+              <div class="filter-pills-container" id="pontoPillsGaragens">
+                <button class="btn-pill active" onclick="filtrarPontoGaragem('TODOS',this)">Todas as Garagens</button>
+              </div>
+            </div>
+
+            <div class="filter-pills-bar" style="margin-bottom:0;">
+              <label><i class="fa-solid fa-route"></i> Serviço:</label>
+              <div class="filter-pills-container" id="pontoPillsServico">
+                <button class="btn-pill active" onclick="filtrarPontoServico('TODOS',this)">Todos</button>
+                <button class="btn-pill" onclick="filtrarPontoServico('FRETAMENTO',this)">Fretamento</button>
+                <button class="btn-pill" onclick="filtrarPontoServico('RODOVIARIO',this)">Rodoviário</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SUB-ABA 1: MONITORAMENTO EM TEMPO REAL (PONTOS EM ABERTO)
+             ========================================================== -->
+        <div id="ponto-subview-tempo-real" class="ponto-subview active no-print" style="margin-top:14px;">
+          <div class="dashboard-grid">
+            <div class="stat-card">
+              <span>Pontos Abertos Agora</span>
+              <h2 id="kpiLiveTotalAbertos">0</h2>
+            </div>
+            <div class="stat-card blue">
+              <span>Em Rota (Operação)</span>
+              <h2 id="kpiLiveEmRota">0</h2>
+            </div>
+            <div class="stat-card yellow">
+              <span>Em Deslocamento</span>
+              <h2 id="kpiLiveEmDeslocamento">0</h2>
+            </div>
+            <div class="stat-card purple">
+              <span>Jornada Acumulada Hoje</span>
+              <h2 id="kpiLiveHorasHoje">00:00</h2>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3><span class="live-pulse" style="margin-right:6px;"></span> Pontos em Aberto Agora (Tempo Real)</h3>
+                <small style="color:var(--text-muted); font-weight:700;" id="lblLiveUltimaAtualizacao">Atualizado agora • Cronômetro ao vivo</small>
+              </div>
+              <div class="action-toolbar">
+                <button class="btn btn-yellow" onclick="filtrarLiveTipo('TODOS', this)">Todos</button>
+                <button class="btn btn-secondary" onclick="filtrarLiveTipo('ROTA', this)">Em Rota</button>
+                <button class="btn btn-secondary" onclick="filtrarLiveTipo('DESLOCAMENTO', this)">Em Deslocamento</button>
+                <button class="btn" onclick="atualizarPainelPonto()">
+                  <i class="fa-solid fa-rotate"></i> Atualizar Agora
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Colaborador</th>
+                    <th>Garagem / Serviço</th>
+                    <th>Status / Etapa Atual</th>
+                    <th>Veículo / Linha / Rota</th>
+                    <th>Início da Etapa</th>
+                    <th>Tempo na Etapa</th>
+                    <th>Tempo Total Hoje</th>
+                    <th>KM Inicial</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaPontoTempoReal">
+                  <tr><td colspan="9" style="text-align:center;">Carregando monitoramento em tempo real...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================
+             SUB-ABA 2: RELATÓRIO MENSAL E FOLHA DE PONTO
+             ========================================================== -->
+        <div id="ponto-subview-relatorio-folha" class="ponto-subview" style="margin-top:14px;">
+
+          <!-- FILTROS ESPECÍFICOS DO RELATÓRIO MENSAL (OCULTOS NA IMPRESSÃO) -->
+          <div class="no-print">
+            <div class="filter-pills-bar">
+              <label><i class="fa-solid fa-calendar-days"></i> Mês:</label>
+              <div class="filter-pills-container" id="pontoMesPills">
+                <button class="btn-pill" onclick="filtrarPontoMes('01',this)">Jan</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('02',this)">Fev</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('03',this)">Mar</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('04',this)">Abr</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('05',this)">Mai</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('06',this)">Jun</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('07',this)">Jul</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('08',this)">Ago</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('09',this)">Set</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('10',this)">Out</button>
+                <button class="btn-pill active" onclick="filtrarPontoMes('11',this)">Nov</button>
+                <button class="btn-pill" onclick="filtrarPontoMes('12',this)">Dez</button>
+              </div>
+            </div>
+
+            <div class="filters-row" style="margin-top:10px;">
+              <div class="filter-pills-bar" style="margin-bottom:0;">
+                <label><i class="fa-solid fa-user-check"></i> Funcionário:</label>
+                <div class="filter-select-group">
+                  <select id="pontoSelectFuncionario" onchange="mudarPontoFuncionario(this.value)">
+                    <option value="">Selecione um funcionário para a folha...</option>
+                  </select>
+                  <button class="btn-pill" onclick="atualizarPainelPonto()">
+                    <i class="fa-solid fa-rotate"></i> Atualizar
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-pills-bar" style="margin-bottom:0;">
+                <label><i class="fa-solid fa-clock"></i> Jornada/Dia:</label>
+                <div class="filter-select-group">
+                  <input type="number" id="pontoJornadaHoras" value="8" min="1" max="16" step="0.5" onchange="renderizarPainelPonto()" title="Carga horária diária de referência (horas)">
+                  <span style="font-size:0.78rem; font-weight:800; color:var(--text-muted);">h/dia</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPIs DE PONTO NO PERÍODO -->
+          <div class="dashboard-grid no-print" style="margin-top:16px;">
+            <div class="stat-card">
+              <span>Funcionários na Garagem</span>
+              <h2 id="kpiPontoFuncTotal">0</h2>
+            </div>
+            <div class="stat-card yellow">
+              <span>Jornadas em Aberto</span>
+              <h2 id="kpiPontoAbertos">0</h2>
+            </div>
+            <div class="stat-card blue">
+              <span>Total Horas no Mês</span>
+              <h2 id="kpiPontoHorasMes">00:00</h2>
+            </div>
+            <div class="stat-card purple">
+              <span>KM Total / Passageiros</span>
+              <h2 id="kpiPontoKmPax">0 KM • 0</h2>
+            </div>
+          </div>
+
+          <!-- RESUMO DE TODOS OS FUNCIONÁRIOS DA GARAGEM -->
+          <div class="card no-print">
+            <div class="card-header">
+              <div>
+                <h3><i class="fa-solid fa-users-gear" style="color:var(--mactur-green-dark);"></i> Resumo de Funcionários da Garagem — <span id="lblPontoPeriodoResumo">--</span></h3>
+              </div>
+              <div class="action-toolbar">
+                <button class="btn btn-yellow" onclick="filtrarResumoPonto('TODOS', this)">Todos</button>
+                <button class="btn btn-secondary" onclick="filtrarResumoPonto('ABERTO', this)">Em Aberto</button>
+                <button class="btn btn-secondary" onclick="filtrarResumoPonto('COM_PONTO', this)">Com Registro</button>
+                <button class="btn btn-secondary" onclick="filtrarResumoPonto('SEM_PONTO', this)">Sem Registro</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Funcionário</th>
+                    <th>Função / Serviço</th>
+                    <th>Garagem</th>
+                    <th>Status Atual</th>
+                    <th>Dias c/ Ponto</th>
+                    <th>Horas no Mês</th>
+                    <th>KM Rodado</th>
+                    <th>Passageiros</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaResumoFuncionariosPonto">
+                  <tr><td colspan="10" style="text-align:center;">Carregando resumo...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- FOLHA DE PONTO MENSAL IMPRIMÍVEL -->
+          <div class="card" style="margin-top:20px;">
+            <div class="card-header no-print">
+              <div>
+                <h3><i class="fa-solid fa-file-signature" style="color:var(--mactur-green-dark);"></i> Folha de Ponto Mensal para Assinatura</h3>
+                <small style="color:var(--text-muted); font-weight:700;">Etapas organizadas em sequência operacional: Deslocamento Inicial → Rotas / Etapas Intermediárias → Deslocamento Final</small>
+              </div>
+              <div class="action-toolbar">
+                <button class="btn btn-yellow" onclick="imprimirFolhaPonto()">
+                  <i class="fa-solid fa-print"></i> Imprimir Folha do Mês
+                </button>
+              </div>
+            </div>
+
+            <div class="folha-ponto-box" id="areaFolhaPontoImpressao">
+              <div class="folha-header-institucional">
+                <div>
+                  <div class="folha-empresa-titulo" id="folhaEmpresaNome">MACTUR FRETAMENTOS LTDA</div>
+                  <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted);">
+                    CNPJ: 64.170.087/0001-28 • CONTROLE MENSAL DE JORNADA E PONTO
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Período de Apuração</div>
+                  <div style="font-size:1.1rem; font-weight:900; color:var(--mactur-green-dark);" id="folhaPeriodo">--/--</div>
+                </div>
+              </div>
+
+              <div class="folha-meta-grid">
+                <div class="folha-meta-item">
+                  <strong>Funcionário</strong>
+                  <span id="folhaFuncNome">Selecione um funcionário</span>
+                </div>
+                <div class="folha-meta-item">
+                  <strong>Matrícula / ID • CPF</strong>
+                  <span id="folhaFuncDoc">--</span>
+                </div>
+                <div class="folha-meta-item">
+                  <strong>Função / Serviço</strong>
+                  <span id="folhaFuncCargo">--</span>
+                </div>
+                <div class="folha-meta-item">
+                  <strong>Garagem / Unidade</strong>
+                  <span id="folhaFuncGaragem">--</span>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="tabela-folha">
+                  <thead>
+                    <tr class="folha-titulo-banner">
+                      <th colspan="17">CONTROLE DE PONTO — DESLOCAMENTO INICIAL AO FINAL DA ROTA</th>
+                    </tr>
+                    <tr class="folha-col-grupo">
+                      <th rowspan="2">DATA</th>
+                      <th rowspan="2">SEMANA</th>
+                      <th colspan="2">ETAPA 1<br><span style="font-size:0.6rem; font-weight:700;">DESLOC. INICIAL</span></th>
+                      <th colspan="2">ETAPA 2<br><span style="font-size:0.6rem; font-weight:700;">ROTA 1</span></th>
+                      <th colspan="2">ETAPA 3<br><span style="font-size:0.6rem; font-weight:700;">ROTA 2 / INT.</span></th>
+                      <th colspan="2">ETAPA 4<br><span style="font-size:0.6rem; font-weight:700;">ROTA 3 / INT.</span></th>
+                      <th colspan="2">ETAPA 5<br><span style="font-size:0.6rem; font-weight:700;">ROTA 4 / INT.</span></th>
+                      <th colspan="2">ETAPA 6<br><span style="font-size:0.6rem; font-weight:700;">ROTA 5 / INT.</span></th>
+                      <th colspan="2">ETAPA 7<br><span style="font-size:0.6rem; font-weight:700;">DESLOC. FINAL</span></th>
+                      <th rowspan="2">HS TRAB</th>
+                    </tr>
+                    <tr class="folha-sub-etapa">
+                      <th>INÍCIO</th>
+                      <th>FIM</th>
+                      <th>INÍCIO</th>
+                      <th>FIM</th>
+                      <th>INÍCIO</th>
+                      <th>FIM</th>
+                      <th>INÍCIO</th>
+                      <th>FIM</th>
+                      <th>INÍCIO</th>
+                      <th>FIM</th>
+                      <th>INÍCIO</th>
+                      <th>FIM</th>
+                      <th>INÍCIO</th>
+                      <th>FIM</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelaFolhaMensal">
+                    <tr><td colspan="17" style="text-align:center;">Selecione um funcionário acima para gerar a folha mensal.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="folha-totais-grid">
+                <div class="folha-total-card">
+                  <small>Dias Trabalhados</small>
+                  <strong id="folhaTotDias">0</strong>
+                </div>
+                <div class="folha-total-card">
+                  <small>Total Horas Trabalhadas</small>
+                  <strong id="folhaTotHoras">00:00</strong>
+                </div>
+                <div class="folha-total-card">
+                  <small>Adicional Noturno (Ref.)</small>
+                  <strong id="folhaTotNoturno">00:00</strong>
+                </div>
+                <div class="folha-total-card">
+                  <small>Saldo / Horas Extras</small>
+                  <strong id="folhaTotExtras">00:00</strong>
+                </div>
+                <div class="folha-total-card">
+                  <small>KM / Passageiros</small>
+                  <strong id="folhaTotKmPax">0 KM • 0</strong>
+                </div>
+              </div>
+
+              <p style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
+                Declaro que as marcações de abertura e fechamento acima refletem fielmente os horários trabalhados no período indicado.
+              </p>
+
+              <div class="assinaturas-grid">
+                <div class="linha-assinatura">Data: ____/____/2026</div>
+                <div class="linha-assinatura">Assinatura do Colaborador</div>
+                <div class="linha-assinatura">Visto / Conferência (Garagem / RH)</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
       <!-- AUDITORIA -->
@@ -1109,14 +1729,22 @@
     };
 
     let rawAbastecimentos = [];
+    let rawRegistrosPonto = [];
     let cacheDadosGlobais = { veiculos: [], usuarios: [], garagens: [] };
-    
+
     let mesSelecionado = 'TODOS';
     let garagemSelecionada = 'TODOS';
     let servicoSelecionado = 'TODOS';
     let prefixoSelecionado = 'TODOS';
     let motoristaSelecionado = 'TODOS';
     let usuarioLogado = null;
+
+    // Estado da aba Registro de Ponto
+    let pontoMesSelecionado = String(new Date().getMonth() + 1).padStart(2, '0');
+    let pontoGaragemSelecionada = 'TODOS';
+    let pontoServicoSelecionado = 'TODOS';
+    let pontoFuncionarioSelecionado = '';
+    let pontoFiltroResumoStatus = 'TODOS';
 
     let chartEvolucaoMensal;
     let chartEvolucaoCustoMensal;
@@ -1131,7 +1759,7 @@
 
     function removerAcentos(str) {
       if (!str) return '';
-      return String(str).normalize('NFD').replace(/[̀-ͯ]/g, '');
+      return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
     function normalizarFuncao(funcaoRaw) {
@@ -1168,7 +1796,6 @@
         btnImport.style.display = ehMaster() ? 'inline-flex' : 'none';
       }
 
-      // EXIBIÇÃO DE BOTÕES DE INCLUIR E AÇÕES DE TABELA
       const podeCrud = podeEditarCadastros();
       document.querySelectorAll('.btn-crud').forEach(b => {
         b.style.display = podeCrud ? 'inline-flex' : 'none';
@@ -1185,6 +1812,7 @@
 
       if (!ehMaster() && usuarioLogado.garagem_id) {
         garagemSelecionada = String(usuarioLogado.garagem_id);
+        pontoGaragemSelecionada = String(usuarioLogado.garagem_id);
       }
     }
 
@@ -1368,8 +1996,7 @@
         usuarioLogado = user;
         localStorage.setItem('mactur_user', JSON.stringify(user));
         document.getElementById('loginScreen').style.display = 'none';
-        
-        // Atualizado para exibir o nome e a função logo abaixo no cabeçalho
+
         const funcaoUsuario = usuarioLogado.funcao || 'Usuário';
         document.getElementById('userInfoDisplay').innerHTML = `
           <div class="user-info-text">
@@ -1377,7 +2004,7 @@
             <span class="user-role-display">${funcaoUsuario}</span>
           </div>
         `;
-        
+
         aplicarPermissoesInterface();
         await registrarAuditoria('Realizou login no painel');
         await carregarDados();
@@ -1416,6 +2043,9 @@
 
       if (aba === 'auditoria') carregarAuditoria();
       if (aba === 'abastecimentos') aplicarFiltrosLocais();
+      if (aba === 'ponto') {
+        carregarRegistrosPonto();
+      }
     }
 
     async function buscarTodosRegistros(tabela) {
@@ -1442,8 +2072,7 @@
 
     async function carregarDados() {
       if (!usuarioLogado) return;
-      
-      // Garante que o nome e a função apareçam também se a página for recarregada mantendo a sessão
+
       const funcaoUsuario = usuarioLogado.funcao || 'Usuário';
       document.getElementById('userInfoDisplay').innerHTML = `
         <div class="user-info-text">
@@ -1451,7 +2080,7 @@
           <span class="user-role-display">${funcaoUsuario}</span>
         </div>
       `;
-      
+
       aplicarPermissoesInterface();
 
       try {
@@ -1478,7 +2107,7 @@
         if (!ehMaster() && usuarioLogado.garagem_id) {
           const gIdStr = String(usuarioLogado.garagem_id);
           garagensFiltradas = cacheDadosGlobais.garagens.filter(g => String(g.id) === gIdStr);
-          
+
           veiculosFiltrados = cacheDadosGlobais.veiculos.filter(v => {
             const servicoV = obterServicoVeiculo(v.id, v.tipo, v.servico);
             if (servicoV === 'RODOVIARIO') return true;
@@ -1549,6 +2178,9 @@
         `).join('') || '<tr><td colspan="4" style="text-align:center;">Nenhuma garagem encontrada.</td></tr>';
 
         aplicarFiltrosLocais();
+        if (document.getElementById('tab-ponto')?.classList.contains('active')) {
+          await carregarRegistrosPonto();
+        }
       } catch (erro) {
         console.error("Erro ao carregar dados:", erro);
       }
@@ -1599,7 +2231,7 @@
       const select = document.getElementById('selectPrefixo');
       const valorAtual = select.value;
       let html = '<option value="TODOS">Todos os Prefixos</option>';
-      
+
       const prefixosFiltrados = cacheDadosGlobais.veiculos.filter(v => {
         if (!v.prefixo) return false;
         const servicoV = obterServicoVeiculo(v.id, v.tipo, v.servico);
@@ -1616,7 +2248,7 @@
         html += `<option value="${v.id}">${v.prefixo}</option>`;
       });
       select.innerHTML = html;
-      
+
       if ([...select.options].some(o => o.value === valorAtual)) {
         select.value = valorAtual;
       } else {
@@ -1630,7 +2262,7 @@
       const select = document.getElementById('selectMotorista');
       const valorAtual = select.value;
       let html = '<option value="TODOS">Todos os Motoristas</option>';
-      
+
       const motoristasFiltrados = cacheDadosGlobais.usuarios.filter(u => {
         const funcaoU = String(u.funcao || '').toUpperCase();
         const ehMotorista = !u.funcao || funcaoU.includes('MOTORISTA') || funcaoU.includes('OPERADOR');
@@ -1669,6 +2301,838 @@
         document.getElementById('btnTodosMotorista').classList.add('active');
       }
     }
+
+    /* ============================================================
+       MÓDULO REGISTRO DE PONTO: TEMPO REAL, RESUMO E FOLHA MENSAL
+       ============================================================ */
+    let pontoSubAbaAtual = 'tempo-real';
+    let pontoLiveFiltroTipo = 'TODOS';
+    let intervaloCronometroPonto = null;
+
+    function mudarSubAbaPonto(subAba, btn) {
+      pontoSubAbaAtual = subAba;
+      document.querySelectorAll('.btn-subtab').forEach(b => b.classList.remove('active'));
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const targetBtn = subAba === 'tempo-real'
+          ? document.getElementById('btnSubtabTempoReal')
+          : document.getElementById('btnSubtabRelatorioFolha');
+        targetBtn?.classList.add('active');
+      }
+
+      document.querySelectorAll('.ponto-subview').forEach(v => v.classList.remove('active'));
+      const view = document.getElementById(`ponto-subview-${subAba}`);
+      if (view) view.classList.add('active');
+
+      renderizarPainelPonto();
+    }
+
+    function filtrarLiveTipo(tipo, btn) {
+      pontoLiveFiltroTipo = tipo;
+      if (btn?.parentElement) {
+        btn.parentElement.querySelectorAll('.btn').forEach(b => {
+          if (b.innerText.includes('Atualizar')) return;
+          b.classList.remove('btn-yellow');
+          b.classList.add('btn-secondary');
+        });
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-yellow');
+      }
+      renderizarMonitoramentoTempoReal();
+    }
+
+    function iniciarCronometroTempoReal() {
+      if (intervaloCronometroPonto) clearInterval(intervaloCronometroPonto);
+      intervaloCronometroPonto = setInterval(() => {
+        if (document.getElementById('tab-ponto')?.classList.contains('active')) {
+          atualizarContadoresTempoRealNaTela();
+        }
+      }, 15000); // Atualiza a cada 15 segundos
+    }
+
+    function classificarTipoEtapaPonto(reg) {
+      // Verifica possíveis campos do banco (tipo_etapa, etapa, tipo, tipo_registro, categoria, observacao, rota, linha)
+      const bruto = removerAcentos(String(
+        reg.tipo_etapa || reg.etapa || reg.tipo_registro || reg.tipo || reg.categoria || reg.atividade || reg.observacao || ''
+      )).toUpperCase().trim();
+
+      const temRotaInfo = Boolean(reg.rota || reg.linha || reg.cliente || reg.itinerario);
+
+      if (bruto.includes('DESLOC')) {
+        if (bruto.includes('INIC') || bruto.includes('IDA') || bruto.includes('GARAGEM')) {
+          return { categoria: 'DESLOCAMENTO', subtipo: 'DESLOCAMENTO_INICIAL', label: 'Deslocamento Inicial' };
+        }
+        if (bruto.includes('FIN') || bruto.includes('VOLTA') || bruto.includes('RETORNO')) {
+          return { categoria: 'DESLOCAMENTO', subtipo: 'DESLOCAMENTO_FINAL', label: 'Deslocamento Final' };
+        }
+        return { categoria: 'DESLOCAMENTO', subtipo: 'DESLOCAMENTO', label: 'Deslocamento' };
+      }
+
+      if (bruto.includes('ROTA') || bruto.includes('VIAGEM') || bruto.includes('LINHA') || bruto.includes('FRETAMENTO') || bruto.includes('RODOVIARIO') || temRotaInfo) {
+        return { categoria: 'ROTA', subtipo: 'ROTA', label: 'Em Rota' };
+      }
+
+      return { categoria: 'OUTRO', subtipo: 'ETAPA', label: bruto || 'Jornada / Etapa' };
+    }
+
+    function formatarDuracaoDetalhada(ms) {
+      if (!ms || ms < 0) return '0min';
+      const totalMin = Math.floor(ms / 60000);
+      const dias = Math.floor(totalMin / 1440);
+      const horas = Math.floor((totalMin % 1440) / 60);
+      const mins = totalMin % 60;
+
+      if (dias > 0) {
+        return `${dias}d ${String(horas).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m`;
+      }
+      if (horas > 0) {
+        return `${horas}h ${String(mins).padStart(2, '0')}min`;
+      }
+      return `${mins} min`;
+    }
+
+    function atualizarContadoresTempoRealNaTela() {
+      const agora = Date.now();
+      document.querySelectorAll('[data-abertura-ts]').forEach(el => {
+        const ts = Number(el.getAttribute('data-abertura-ts'));
+        if (!isNaN(ts) && ts > 0) {
+          const diffMs = Math.max(0, agora - ts);
+          el.textContent = formatarDuracaoDetalhada(diffMs);
+          if (diffMs >= 6 * 3600000) {
+            el.classList.add('alerta-longo');
+          } else {
+            el.classList.remove('alerta-longo');
+          }
+        }
+      });
+
+      document.querySelectorAll('[data-hoje-base-min]').forEach(el => {
+        const baseMin = Number(el.getAttribute('data-hoje-base-min')) || 0;
+        const ts = Number(el.getAttribute('data-hoje-abertura-ts'));
+        const extraMin = (!isNaN(ts) && ts > 0) ? Math.floor(Math.max(0, agora - ts) / 60000) : 0;
+        el.textContent = formatarMinutosHHMM(baseMin + extraMin);
+      });
+    }
+
+    async function carregarRegistrosPonto() {
+      renderizarPillsGaragensPonto();
+      try {
+        rawRegistrosPonto = await buscarTodosRegistros('registros_ponto');
+      } catch (e) {
+        console.warn('Não foi possível carregar registros_ponto:', e.message);
+        rawRegistrosPonto = [];
+      }
+      iniciarCronometroTempoReal();
+      renderizarPainelPonto();
+    }
+
+    function renderizarPillsGaragensPonto() {
+      const container = document.getElementById('pontoPillsGaragens');
+      if (!container) return;
+      let html = '';
+
+      if (ehMaster()) {
+        html += `<button class="btn-pill ${pontoGaragemSelecionada === 'TODOS' ? 'active' : ''}" onclick="filtrarPontoGaragem('TODOS',this)">Todas as Garagens</button>`;
+        cacheDadosGlobais.garagens.forEach(g => {
+          const active = String(pontoGaragemSelecionada) === String(g.id) ? 'active' : '';
+          html += `<button class="btn-pill ${active}" onclick="filtrarPontoGaragem('${g.id}',this)">${g.nome}</button>`;
+        });
+      } else if (usuarioLogado?.garagem_id) {
+        pontoGaragemSelecionada = String(usuarioLogado.garagem_id);
+        const gObj = cacheDadosGlobais.garagens.find(g => String(g.id) === pontoGaragemSelecionada);
+        const nomeGaragem = gObj ? gObj.nome : `Garagem ${pontoGaragemSelecionada}`;
+        html += `<button class="btn-pill active" style="cursor:default;">${nomeGaragem}</button>`;
+      } else {
+        html += `<button class="btn-pill ${pontoGaragemSelecionada === 'TODOS' ? 'active' : ''}" onclick="filtrarPontoGaragem('TODOS',this)">Todas as Garagens</button>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function filtrarPontoMes(mes, btn) {
+      pontoMesSelecionado = mes;
+      btn.parentElement.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderizarPainelPonto();
+    }
+
+    function filtrarPontoGaragem(gId, btn) {
+      if (!ehMaster() && usuarioLogado?.garagem_id) return;
+      pontoGaragemSelecionada = gId;
+      btn.parentElement.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderizarPainelPonto();
+    }
+
+    function filtrarPontoServico(servico, btn) {
+      pontoServicoSelecionado = servico;
+      btn.parentElement.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderizarPainelPonto();
+    }
+
+    function mudarPontoFuncionario(funcId) {
+      pontoFuncionarioSelecionado = funcId;
+      renderizarFolhaPontoMensal();
+    }
+
+    function filtrarResumoPonto(statusFiltro, btn) {
+      pontoFiltroResumoStatus = statusFiltro;
+      if (btn?.parentElement) {
+        btn.parentElement.querySelectorAll('.btn').forEach(b => {
+          b.classList.remove('btn-yellow');
+          b.classList.add('btn-secondary');
+        });
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-yellow');
+      }
+      renderizarPainelPonto();
+    }
+
+    async function atualizarPainelPonto() {
+      await carregarRegistrosPonto();
+    }
+
+    function obterGaragemFuncionario(u) {
+      if (u.garagem_id) {
+        const gObj = cacheDadosGlobais.garagens.find(g => String(g.id) === String(u.garagem_id));
+        if (gObj) return { id: String(gObj.id), nome: gObj.nome };
+        return { id: String(u.garagem_id), nome: `Garagem ${u.garagem_id}` };
+      }
+      const regComGaragem = rawRegistrosPonto.find(r => String(r.motorista_id) === String(u.id) && r.veiculo_id);
+      if (regComGaragem) {
+        const vObj = cacheDadosGlobais.veiculos.find(v => String(v.id) === String(regComGaragem.veiculo_id));
+        if (vObj && vObj.garagem_id) {
+          const gObj = cacheDadosGlobais.garagens.find(g => String(g.id) === String(vObj.garagem_id));
+          if (gObj) return { id: String(gObj.id), nome: gObj.nome };
+        }
+      }
+      return { id: '', nome: 'Sem Garagem' };
+    }
+
+    function obterFuncionariosFiltradosPonto() {
+      return cacheDadosGlobais.usuarios.filter(u => {
+        if (u.status && String(u.status).toUpperCase() === 'INATIVO') return false;
+
+        const garagemFunc = obterGaragemFuncionario(u);
+        const servicoFunc = removerAcentos(String(u.servico || '')).trim().toUpperCase();
+        const ehRodoviario = servicoFunc.includes('RODO');
+
+        if (pontoGaragemSelecionada !== 'TODOS') {
+          const bateGaragem = garagemFunc.id === String(pontoGaragemSelecionada);
+          const temPontoNaGaragem = rawRegistrosPonto.some(r => {
+            if (String(r.motorista_id) !== String(u.id)) return false;
+            const vObj = cacheDadosGlobais.veiculos.find(v => String(v.id) === String(r.veiculo_id));
+            return vObj && String(vObj.garagem_id) === String(pontoGaragemSelecionada);
+          });
+          if (!bateGaragem && !temPontoNaGaragem && !ehRodoviario) return false;
+        }
+
+        if (pontoServicoSelecionado !== 'TODOS') {
+          const servNorm = ehRodoviario ? 'RODOVIARIO' : 'FRETAMENTO';
+          if (servNorm !== pontoServicoSelecionado) return false;
+        }
+
+        return true;
+      }).sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+    }
+
+    function renderizarMonitoramentoTempoReal() {
+      const funcionariosBase = obterFuncionariosFiltradosPonto();
+      const idsPermitidos = new Set(funcionariosBase.map(u => String(u.id)));
+      const agora = Date.now();
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+
+      // Filtra registros abertos agora
+      const registrosAbertos = rawRegistrosPonto
+        .filter(r => {
+          const aberto = String(r.status || '').toUpperCase() === 'ABERTO' || !r.data_hora_fechamento;
+          if (!aberto || !r.data_hora_abertura) return false;
+          if (pontoGaragemSelecionada !== 'TODOS' || pontoServicoSelecionado !== 'TODOS') {
+            return idsPermitidos.has(String(r.motorista_id));
+          }
+          return true;
+        })
+        .sort((a, b) => new Date(a.data_hora_abertura).getTime() - new Date(b.data_hora_abertura).getTime());
+
+      let totalEmRota = 0;
+      let totalEmDesloc = 0;
+      let minAcumuladosHoje = 0;
+
+      // Calcula minutos acumulados no dia de hoje para os colaboradores filtrados
+      rawRegistrosPonto.forEach(r => {
+        if (!r.data_hora_abertura) return;
+        if ((pontoGaragemSelecionada !== 'TODOS' || pontoServicoSelecionado !== 'TODOS') && !idsPermitidos.has(String(r.motorista_id))) return;
+        const dIni = new Date(r.data_hora_abertura);
+        if (isNaN(dIni.getTime())) return;
+        if (dIni.toLocaleDateString('pt-BR') === hojeStr) {
+          if (r.data_hora_fechamento) {
+            minAcumuladosHoje += calcularMinutosRegistro(r);
+          } else {
+            minAcumuladosHoje += Math.floor(Math.max(0, agora - dIni.getTime()) / 60000);
+          }
+        }
+      });
+
+      const itensProcessados = registrosAbertos.map(reg => {
+        const funcObj = cacheDadosGlobais.usuarios.find(u => String(u.id) === String(reg.motorista_id));
+        const garagemObj = funcObj ? obterGaragemFuncionario(funcObj) : { id: '', nome: 'Não identificada' };
+        const vObj = cacheDadosGlobais.veiculos.find(v => String(v.id) === String(reg.veiculo_id));
+        const tipoInfo = classificarTipoEtapaPonto(reg);
+
+        if (tipoInfo.categoria === 'ROTA') totalEmRota += 1;
+        if (tipoInfo.categoria === 'DESLOCAMENTO') totalEmDesloc += 1;
+
+        const dIni = new Date(reg.data_hora_abertura);
+        const tsAbertura = dIni.getTime();
+        const diffMs = Math.max(0, agora - tsAbertura);
+
+        // Minutos fechados hoje desse mesmo motorista
+        let minFechadosHojeMotorista = 0;
+        rawRegistrosPonto.forEach(r2 => {
+          if (String(r2.motorista_id) !== String(reg.motorista_id)) return;
+          if (!r2.data_hora_abertura || !r2.data_hora_fechamento) return;
+          const d2 = new Date(r2.data_hora_abertura);
+          if (!isNaN(d2.getTime()) && d2.toLocaleDateString('pt-BR') === hojeStr) {
+            minFechadosHojeMotorista += calcularMinutosRegistro(r2);
+          }
+        });
+
+        const minTotalHojeMotorista = minFechadosHojeMotorista + Math.floor(diffMs / 60000);
+
+        return {
+          reg,
+          funcObj,
+          garagemObj,
+          vObj,
+          tipoInfo,
+          dIni,
+          tsAbertura,
+          diffMs,
+          minFechadosHojeMotorista,
+          minTotalHojeMotorista
+        };
+      });
+
+      // Atualiza badges e KPIs do monitoramento em tempo real
+      const badgeSubtab = document.getElementById('badgeQtdAbertosSubtab');
+      if (badgeSubtab) badgeSubtab.innerText = itensProcessados.length;
+
+      document.getElementById('kpiLiveTotalAbertos').innerText = itensProcessados.length;
+      document.getElementById('kpiLiveEmRota').innerText = totalEmRota;
+      document.getElementById('kpiLiveEmDeslocamento').innerText = totalEmDesloc;
+      document.getElementById('kpiLiveHorasHoje').innerText = formatarMinutosHHMM(minAcumuladosHoje);
+      document.getElementById('lblLiveUltimaAtualizacao').innerText = `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} • Cronômetro ao vivo`;
+
+      const filtradosTabela = itensProcessados.filter(item => {
+        if (pontoLiveFiltroTipo === 'TODOS') return true;
+        return item.tipoInfo.categoria === pontoLiveFiltroTipo;
+      });
+
+      const tbody = document.getElementById('tabelaPontoTempoReal');
+      if (!tbody) return;
+
+      if (filtradosTabela.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-muted); font-weight:700;">Nenhum ponto em aberto no momento para os filtros selecionados.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtradosTabela.map(item => {
+        const nomeFunc = item.funcObj ? item.funcObj.nome : `Colaborador ID ${item.reg.motorista_id}`;
+        const funcaoFunc = item.funcObj?.funcao || 'Motorista';
+        const servicoFunc = item.funcObj?.servico || '';
+        const prefixoVeiculo = item.vObj ? `${item.vObj.prefixo} (${item.vObj.placa || ''})` : (item.reg.veiculo_id ? `Veículo ID ${item.reg.veiculo_id}` : 'Sem veículo');
+        const rotaInfo = item.reg.rota || item.reg.linha || item.reg.cliente || item.reg.observacao || '';
+
+        let badgeClass = 'badge-tipo-outro';
+        let iconClass = 'fa-clock';
+        if (item.tipoInfo.categoria === 'ROTA') {
+          badgeClass = 'badge-tipo-rota';
+          iconClass = 'fa-bus';
+        } else if (item.tipoInfo.categoria === 'DESLOCAMENTO') {
+          badgeClass = 'badge-tipo-desloc';
+          iconClass = 'fa-route';
+        }
+
+        const horaIniStr = item.dIni.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const dataIniStr = item.dIni.toLocaleDateString('pt-BR');
+        const alertaLongoClass = item.diffMs >= 6 * 3600000 ? 'alerta-longo' : '';
+
+        return `
+          <tr>
+            <td>
+              <strong>${nomeFunc}</strong><br>
+              <small style="color:var(--text-muted); font-weight:700;">${funcaoFunc}</small>
+            </td>
+            <td>
+              <strong>${item.garagemObj.nome}</strong><br>
+              <small style="color:var(--text-muted);">${servicoFunc}</small>
+            </td>
+            <td>
+              <span class="badge-status ${badgeClass}">
+                <i class="fa-solid ${iconClass}"></i> ${item.tipoInfo.label}
+              </span>
+            </td>
+            <td>
+              <strong>${prefixoVeiculo}</strong>
+              ${rotaInfo ? `<br><small style="color:var(--mactur-blue); font-weight:700;">${rotaInfo}</small>` : ''}
+            </td>
+            <td>
+              <strong>${horaIniStr}</strong><br>
+              <small style="color:var(--text-muted);">${dataIniStr}</small>
+            </td>
+            <td>
+              <span class="tempo-vivo-pill ${alertaLongoClass}" data-abertura-ts="${item.tsAbertura}">
+                ${formatarDuracaoDetalhada(item.diffMs)}
+              </span>
+            </td>
+            <td>
+              <strong data-hoje-base-min="${item.minFechadosHojeMotorista}" data-hoje-abertura-ts="${item.tsAbertura}">
+                ${formatarMinutosHHMM(item.minTotalHojeMotorista)}
+              </strong>
+            </td>
+            <td>${item.reg.km_inicial != null ? Number(item.reg.km_inicial).toLocaleString('pt-BR') + ' KM' : '--'}</td>
+            <td>
+              <button class="btn btn-edit" onclick="abrirFolhaDoMonitoramento('${item.reg.motorista_id}')">
+                <i class="fa-solid fa-file-lines"></i> Folha
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function abrirFolhaDoMonitoramento(funcId) {
+      pontoFuncionarioSelecionado = String(funcId);
+      mudarSubAbaPonto('relatorio-folha');
+      const sel = document.getElementById('pontoSelectFuncionario');
+      if (sel) sel.value = pontoFuncionarioSelecionado;
+      renderizarFolhaPontoMensal();
+      document.getElementById('areaFolhaPontoImpressao')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function calcularMinutosRegistro(reg) {
+      if (!reg.data_hora_abertura || !reg.data_hora_fechamento) return 0;
+      const ini = new Date(reg.data_hora_abertura).getTime();
+      const fim = new Date(reg.data_hora_fechamento).getTime();
+      if (isNaN(ini) || isNaN(fim) || fim <= ini) return 0;
+      return Math.round((fim - ini) / 60000);
+    }
+
+    function calcularMinutosNoturnosRegistro(reg) {
+      if (!reg.data_hora_abertura || !reg.data_hora_fechamento) return 0;
+      const ini = new Date(reg.data_hora_abertura).getTime();
+      const fim = new Date(reg.data_hora_fechamento).getTime();
+      if (isNaN(ini) || isNaN(fim) || fim <= ini) return 0;
+
+      let minNoturnos = 0;
+      const passo = 60000;
+      for (let t = ini; t < fim; t += passo) {
+        const d = new Date(t);
+        const h = d.getHours();
+        if (h >= 22 || h < 5) {
+          minNoturnos += 1;
+        }
+      }
+      return minNoturnos;
+    }
+
+    function formatarMinutosHHMM(totalMin, permitirSinal = false) {
+      const negativo = totalMin < 0;
+      const absMin = Math.abs(Math.round(totalMin));
+      const horas = Math.floor(absMin / 60);
+      const mins = absMin % 60;
+      const hhmm = `${String(horas).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+      if (permitirSinal && totalMin !== 0) {
+        return (negativo ? '-' : '+') + hhmm;
+      }
+      return (negativo ? '-' : '') + hhmm;
+    }
+
+    function obterAnoReferenciaPonto() {
+      const match = rawRegistrosPonto.find(r => {
+        if (!r.data_hora_abertura) return false;
+        const d = new Date(r.data_hora_abertura);
+        return !isNaN(d.getTime()) && String(d.getMonth() + 1).padStart(2, '0') === pontoMesSelecionado;
+      });
+      if (match) {
+        return new Date(match.data_hora_abertura).getFullYear();
+      }
+      return new Date().getFullYear();
+    }
+
+    /**
+     * Organiza as etapas do dia na sequência operacional da folha de ponto:
+     * Coluna 0 (ETAPA 1): Deslocamento Inicial (ou primeira etapa do dia)
+     * Colunas 1..5 (ETAPAS 2 a 6): Rotas / etapas intermediárias em ordem cronológica
+     * Coluna 6 (ETAPA 7): Deslocamento Final (ou última etapa quando marcada como deslocamento final / fechamento)
+     */
+    function organizarEtapasParaFolha(etapasDia) {
+      const slots = new Array(7).fill(null);
+      if (!etapasDia || etapasDia.length === 0) return slots;
+
+      // Garante ordenação cronológica exata pela abertura
+      const ordenadas = [...etapasDia].sort((a, b) => a.tsAbertura - b.tsAbertura);
+
+      if (ordenadas.length === 1) {
+        const unica = ordenadas[0];
+        if (unica.subtipo === 'DESLOCAMENTO_FINAL') {
+          slots[6] = unica;
+        } else {
+          slots[0] = unica;
+        }
+        return slots;
+      }
+
+      const primeiro = ordenadas[0];
+      const ultimo = ordenadas[ordenadas.length - 1];
+      const temDeslocFinalExplicito = ultimo.subtipo === 'DESLOCAMENTO_FINAL';
+      const temDeslocInicialExplicito = primeiro.subtipo === 'DESLOCAMENTO_INICIAL';
+
+      // Caso padrão operacional: abre com deslocamento inicial na Etapa 1 e fecha com deslocamento final na Etapa 7
+      if (temDeslocInicialExplicito || temDeslocFinalExplicito || ordenadas.length >= 2) {
+        slots[0] = primeiro;
+
+        // Se o último registro for deslocamento final (ou se houver 3+ etapas onde a última encerra o turno),
+        // posiciona o encerramento diretamente na Etapa 7 (Deslocamento Final)
+        const encerrarNaEtapa7 = temDeslocFinalExplicito || (ordenadas.length >= 3 && ultimo.categoria === 'DESLOCAMENTO');
+
+        if (encerrarNaEtapa7) {
+          slots[6] = ultimo;
+          const intermediarias = ordenadas.slice(1, ordenadas.length - 1);
+          intermediarias.forEach((et, idx) => {
+            if (idx < 5) {
+              slots[idx + 1] = et;
+            }
+          });
+        } else {
+          // Preenche sequencialmente Etapa 1, Etapa 2, Etapa 3... até Etapa 7
+          ordenadas.slice(1).forEach((et, idx) => {
+            if (idx < 6) {
+              slots[idx + 1] = et;
+            }
+          });
+        }
+      }
+
+      return slots;
+    }
+
+    function agregarPontoFuncionarioMes(funcId, mesStr, anoNum) {
+      const registrosMes = rawRegistrosPonto
+        .filter(r => {
+          if (String(r.motorista_id) !== String(funcId)) return false;
+          if (!r.data_hora_abertura) return false;
+          const d = new Date(r.data_hora_abertura);
+          if (isNaN(d.getTime())) return false;
+          return String(d.getMonth() + 1).padStart(2, '0') === mesStr && d.getFullYear() === anoNum;
+        })
+        .sort((a, b) => new Date(a.data_hora_abertura).getTime() - new Date(b.data_hora_abertura).getTime());
+
+      const temAberto = registrosMes.some(r => String(r.status || '').toUpperCase() === 'ABERTO' || !r.data_hora_fechamento);
+
+      const diasMap = {};
+      let totalMinTrab = 0;
+      let totalMinNoturno = 0;
+      let totalKm = 0;
+      let totalPax = 0;
+
+      registrosMes.forEach(r => {
+        const dIni = new Date(r.data_hora_abertura);
+        const diaNum = dIni.getDate();
+        if (!diasMap[diaNum]) {
+          diasMap[diaNum] = {
+            dia: diaNum,
+            etapas: [],
+            minTrab: 0,
+            minNoturno: 0,
+            km: 0,
+            pax: 0,
+            temAberto: false
+          };
+        }
+
+        const minR = calcularMinutosRegistro(r);
+        const minN = calcularMinutosNoturnosRegistro(r);
+        const kmIni = Number(r.km_inicial);
+        const kmFim = Number(r.km_final);
+        const kmR = (!isNaN(kmIni) && !isNaN(kmFim) && kmFim >= kmIni) ? (kmFim - kmIni) : 0;
+        const paxR = Number(r.qtd_passageiros) > 0 ? Number(r.qtd_passageiros) : 0;
+        const abertoR = String(r.status || '').toUpperCase() === 'ABERTO' || !r.data_hora_fechamento;
+        const tipoInfo = classificarTipoEtapaPonto(r);
+
+        const horaAbertura = dIni.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const horaFechamento = r.data_hora_fechamento
+          ? new Date(r.data_hora_fechamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+          : 'ABERTO';
+
+        diasMap[diaNum].etapas.push({
+          abertura: horaAbertura,
+          fechamento: horaFechamento,
+          aberto: abertoR,
+          tsAbertura: dIni.getTime(),
+          categoria: tipoInfo.categoria,
+          subtipo: tipoInfo.subtipo,
+          label: tipoInfo.label
+        });
+        diasMap[diaNum].minTrab += minR;
+        diasMap[diaNum].minNoturno += minN;
+        diasMap[diaNum].km += kmR;
+        diasMap[diaNum].pax += paxR;
+        if (abertoR) diasMap[diaNum].temAberto = true;
+
+        totalMinTrab += minR;
+        totalMinNoturno += minN;
+        totalKm += kmR;
+        totalPax += paxR;
+      });
+
+      const diasTrabalhados = Object.values(diasMap).filter(d => d.etapas.length > 0).length;
+
+      let statusResumo = 'SEM_PONTO';
+      if (temAberto) statusResumo = 'ABERTO';
+      else if (registrosMes.length > 0) statusResumo = 'COM_PONTO';
+
+      return {
+        registrosMes,
+        diasMap,
+        diasTrabalhados,
+        totalMinTrab,
+        totalMinNoturno,
+        totalKm,
+        totalPax,
+        temAberto,
+        statusResumo
+      };
+    }
+
+    function renderizarPainelPonto() {
+      // Sempre atualiza o monitoramento em tempo real (e seu contador na sub-aba)
+      renderizarMonitoramentoTempoReal();
+
+      const anoRef = obterAnoReferenciaPonto();
+      const nomesMes = {
+        '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr', '05': 'Mai', '06': 'Jun',
+        '07': 'Jul', '08': 'Ago', '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez'
+      };
+      const rotuloPeriodo = `${nomesMes[pontoMesSelecionado] || pontoMesSelecionado}/${anoRef}`;
+      document.getElementById('lblPontoPeriodoResumo').innerText = rotuloPeriodo;
+
+      const funcionariosBase = obterFuncionariosFiltradosPonto();
+      const agregados = funcionariosBase.map(u => ({
+        usuario: u,
+        garagem: obterGaragemFuncionario(u),
+        metricas: agregarPontoFuncionarioMes(u.id, pontoMesSelecionado, anoRef)
+      }));
+
+      const selFunc = document.getElementById('pontoSelectFuncionario');
+      const valorAnterior = pontoFuncionarioSelecionado || selFunc.value;
+      selFunc.innerHTML = '<option value="">Selecione um funcionário para a folha...</option>' +
+        agregados.map(({ usuario }) => `<option value="${usuario.id}">${usuario.nome} (${usuario.funcao || 'Colaborador'})</option>`).join('');
+
+      if (valorAnterior && agregados.some(a => String(a.usuario.id) === String(valorAnterior))) {
+        selFunc.value = valorAnterior;
+        pontoFuncionarioSelecionado = valorAnterior;
+      } else if (agregados.length > 0 && !pontoFuncionarioSelecionado) {
+        pontoFuncionarioSelecionado = String(agregados[0].usuario.id);
+        selFunc.value = pontoFuncionarioSelecionado;
+      } else if (!agregados.some(a => String(a.usuario.id) === String(pontoFuncionarioSelecionado))) {
+        pontoFuncionarioSelecionado = '';
+        selFunc.value = '';
+      }
+
+      let kpiAbertos = 0;
+      let kpiMinTotal = 0;
+      let kpiKmTotal = 0;
+      let kpiPaxTotal = 0;
+
+      agregados.forEach(({ metricas }) => {
+        if (metricas.temAberto) kpiAbertos += 1;
+        kpiMinTotal += metricas.totalMinTrab;
+        kpiKmTotal += metricas.totalKm;
+        kpiPaxTotal += metricas.totalPax;
+      });
+
+      document.getElementById('kpiPontoFuncTotal').innerText = agregados.length;
+      document.getElementById('kpiPontoAbertos').innerText = kpiAbertos;
+      document.getElementById('kpiPontoHorasMes').innerText = formatarMinutosHHMM(kpiMinTotal);
+      document.getElementById('kpiPontoKmPax').innerText = `${kpiKmTotal.toLocaleString('pt-BR')} KM • ${kpiPaxTotal.toLocaleString('pt-BR')}`;
+
+      const listaResumoExibida = agregados.filter(({ metricas }) => {
+        if (pontoFiltroResumoStatus === 'TODOS') return true;
+        return metricas.statusResumo === pontoFiltroResumoStatus;
+      });
+
+      const tbodyResumo = document.getElementById('tabelaResumoFuncionariosPonto');
+      if (listaResumoExibida.length === 0) {
+        tbodyResumo.innerHTML = '<tr><td colspan="10" style="text-align:center;">Nenhum funcionário encontrado para os filtros selecionados.</td></tr>';
+      } else {
+        tbodyResumo.innerHTML = listaResumoExibida.map(({ usuario, garagem, metricas }) => {
+          let badgeHtml = '<span class="badge-status badge-sem-ponto"><i class="fa-solid fa-minus"></i> Sem Registro</span>';
+          if (metricas.temAberto) {
+            badgeHtml = '<span class="badge-status badge-aberto"><i class="fa-solid fa-clock"></i> Ponto Aberto</span>';
+          } else if (metricas.registrosMes.length > 0) {
+            badgeHtml = '<span class="badge-status badge-fechado"><i class="fa-solid fa-check"></i> Em Dia</span>';
+          }
+
+          return `
+            <tr>
+              <td>${usuario.id}</td>
+              <td><strong>${usuario.nome || ''}</strong></td>
+              <td>${usuario.funcao || ''} ${usuario.servico ? '• ' + usuario.servico : ''}</td>
+              <td>${garagem.nome}</td>
+              <td>${badgeHtml}</td>
+              <td><strong>${metricas.diasTrabalhados}</strong></td>
+              <td><strong>${formatarMinutosHHMM(metricas.totalMinTrab)}</strong></td>
+              <td>${metricas.totalKm.toLocaleString('pt-BR')} KM</td>
+              <td>${metricas.totalPax.toLocaleString('pt-BR')}</td>
+              <td>
+                <button class="btn btn-edit" onclick="selecionarEImprimirFolha('${usuario.id}', false)">
+                  <i class="fa-solid fa-file-lines"></i> Ver Folha
+                </button>
+                <button class="btn btn-yellow" style="padding:6px 10px; font-size:0.78rem;" onclick="selecionarEImprimirFolha('${usuario.id}', true)">
+                  <i class="fa-solid fa-print"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      renderizarFolhaPontoMensal();
+    }
+
+    function selecionarEImprimirFolha(funcId, imprimirDireto) {
+      pontoFuncionarioSelecionado = String(funcId);
+      const sel = document.getElementById('pontoSelectFuncionario');
+      if (sel) sel.value = pontoFuncionarioSelecionado;
+      renderizarFolhaPontoMensal();
+      if (imprimirDireto) {
+        imprimirFolhaPonto();
+      } else {
+        document.getElementById('areaFolhaPontoImpressao')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function renderizarFolhaPontoMensal() {
+      const anoRef = obterAnoReferenciaPonto();
+      const mesIdx = Number(pontoMesSelecionado) - 1;
+      const nomesMes = {
+        '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr', '05': 'Mai', '06': 'Jun',
+        '07': 'Jul', '08': 'Ago', '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez'
+      };
+      const rotuloPeriodo = `${(nomesMes[pontoMesSelecionado] || pontoMesSelecionado).toLowerCase()}/${String(anoRef).slice(-2)} (${pontoMesSelecionado}/${anoRef})`;
+      document.getElementById('folhaPeriodo').innerText = rotuloPeriodo;
+
+      const funcObj = cacheDadosGlobais.usuarios.find(u => String(u.id) === String(pontoFuncionarioSelecionado));
+      const tbodyFolha = document.getElementById('tabelaFolhaMensal');
+
+      if (!funcObj) {
+        document.getElementById('folhaFuncNome').innerText = 'Selecione um funcionário';
+        document.getElementById('folhaFuncDoc').innerText = '--';
+        document.getElementById('folhaFuncCargo').innerText = '--';
+        document.getElementById('folhaFuncGaragem').innerText = '--';
+        tbodyFolha.innerHTML = '<tr><td colspan="17" style="text-align:center;">Selecione um funcionário acima para gerar a folha mensal.</td></tr>';
+        document.getElementById('folhaTotDias').innerText = '0';
+        document.getElementById('folhaTotHoras').innerText = '00:00';
+        document.getElementById('folhaTotNoturno').innerText = '00:00';
+        document.getElementById('folhaTotExtras').innerText = '00:00';
+        document.getElementById('folhaTotKmPax').innerText = '0 KM • 0';
+        return;
+      }
+
+      const garagemFunc = obterGaragemFuncionario(funcObj);
+      const agreg = agregarPontoFuncionarioMes(funcObj.id, pontoMesSelecionado, anoRef);
+      const jornadaHorasDia = Math.max(0.5, Number(document.getElementById('pontoJornadaHoras')?.value) || 8);
+      const minJornadaDia = Math.round(jornadaHorasDia * 60);
+
+      document.getElementById('folhaEmpresaNome').innerText =
+        garagemFunc.nome && garagemFunc.nome !== 'Sem Garagem'
+          ? `MACTUR FRETAMENTOS LTDA — ${garagemFunc.nome}`
+          : 'MACTUR FRETAMENTOS LTDA';
+      document.getElementById('folhaFuncNome').innerText = funcObj.nome || '--';
+      document.getElementById('folhaFuncDoc').innerText = `ID ${funcObj.id} • CPF: ${funcObj.cpf || '--'}`;
+      document.getElementById('folhaFuncCargo').innerText = `${funcObj.funcao || 'Colaborador'}${funcObj.servico ? ' / ' + funcObj.servico : ''}`;
+      document.getElementById('folhaFuncGaragem').innerText = garagemFunc.nome;
+
+      const diasNoMes = new Date(anoRef, mesIdx + 1, 0).getDate();
+      const diasSemanaPt = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+
+      let linhasHtml = '';
+      let saldoMinMensal = 0;
+
+      for (let dia = 1; dia <= diasNoMes; dia++) {
+        const dataDia = new Date(anoRef, mesIdx, dia);
+        const diaSemIdx = dataDia.getDay();
+        const ehFds = diaSemIdx === 0 || diaSemIdx === 6;
+        const dataStr = `${String(dia).padStart(2, '0')}/${pontoMesSelecionado}/${anoRef}`;
+        const diaSemNome = diasSemanaPt[diaSemIdx];
+
+        const infoDia = agreg.diasMap[dia];
+        const slotsEtapas = organizarEtapasParaFolha(infoDia?.etapas);
+        let etapasHtml = '';
+
+        for (let e = 0; e < 7; e++) {
+          const etapaObj = slotsEtapas[e];
+          if (etapaObj) {
+            const estiloAberto = etapaObj.aberto ? 'color:#991b1b; font-weight:900;' : 'font-weight:700;';
+            const tituloTooltip = etapaObj.label ? `title="${etapaObj.label}"` : '';
+            etapasHtml += `
+              <td style="font-weight:700;" ${tituloTooltip}>${etapaObj.abertura}</td>
+              <td style="${estiloAberto}" ${tituloTooltip}>${etapaObj.fechamento}</td>
+            `;
+          } else {
+            etapasHtml += `<td></td><td></td>`;
+          }
+        }
+
+        if (!infoDia) {
+          linhasHtml += `
+            <tr class="${ehFds ? 'dia-fds' : ''}">
+              <td>${dataStr}</td>
+              <td>${diaSemNome}</td>
+              ${etapasHtml}
+              <td>00:00</td>
+            </tr>
+          `;
+        } else {
+          const saldoDia = infoDia.minTrab - minJornadaDia;
+          saldoMinMensal += saldoDia;
+
+          linhasHtml += `
+            <tr class="${ehFds ? 'dia-fds' : ''}">
+              <td><strong>${dataStr}</strong></td>
+              <td>${diaSemNome}</td>
+              ${etapasHtml}
+              <td><strong>${formatarMinutosHHMM(infoDia.minTrab)}</strong></td>
+            </tr>
+          `;
+        }
+      }
+
+      tbodyFolha.innerHTML = linhasHtml;
+      document.getElementById('folhaTotDias').innerText = agreg.diasTrabalhados;
+      document.getElementById('folhaTotHoras').innerText = formatarMinutosHHMM(agreg.totalMinTrab);
+      document.getElementById('folhaTotNoturno').innerText = formatarMinutosHHMM(agreg.totalMinNoturno);
+      document.getElementById('folhaTotExtras').innerText = formatarMinutosHHMM(saldoMinMensal, true);
+      document.getElementById('folhaTotKmPax').innerText = `${agreg.totalKm.toLocaleString('pt-BR')} KM • ${agreg.totalPax.toLocaleString('pt-BR')}`;
+    }
+
+    async function imprimirFolhaPonto() {
+      if (!pontoFuncionarioSelecionado) {
+        alert('Selecione um funcionário antes de imprimir a folha de ponto.');
+        return;
+      }
+      renderizarFolhaPontoMensal();
+      const funcObj = cacheDadosGlobais.usuarios.find(u => String(u.id) === String(pontoFuncionarioSelecionado));
+      await registrarAuditoria(`Imprimiu folha de ponto mensal de ${funcObj?.nome || 'ID ' + pontoFuncionarioSelecionado} (${pontoMesSelecionado}/${obterAnoReferenciaPonto()})`);
+      window.print();
+    }
+
+    /* ============================================================
+       FIM DO MÓDULO REGISTRO DE PONTO
+       ============================================================ */
 
     /* FUNÇÕES CRUD - MODAIS */
     function fecharModal(modalId) {
@@ -1888,7 +3352,7 @@
       garagemSelecionada = gId;
       btn.parentElement.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      
+
       atualizarSelectsDependentes();
       aplicarFiltrosLocais();
     }
@@ -1971,7 +3435,7 @@
         const matchG = garagemSelecionada === 'TODOS' || String(r.garagem_origem_id) === String(garagemSelecionada);
         const matchP = prefixoSelecionado === 'TODOS' || String(r.veiculo_id) === String(prefixoSelecionado);
         const matchM = motoristaSelecionado === 'TODOS' || String(r.motorista_id) === String(motoristaSelecionado);
-        
+
         let matchServico = true;
         if (servicoSelecionado !== 'TODOS') {
           const serv = obterServicoVeiculo(r.veiculo_id, r.tipo_veiculo, r.servico);
