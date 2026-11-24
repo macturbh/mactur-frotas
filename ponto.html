@@ -158,6 +158,7 @@
       box-shadow: 0 4px 12px rgba(0, 128, 55, 0.3);
       transition: background 0.2s;
       width: 100%;
+      text-decoration: none;
     }
 
     .btn-primary:hover { background: var(--mactur-green-dark); }
@@ -178,6 +179,7 @@
       gap: 10px;
       box-shadow: 0 4px 12px rgba(241, 196, 15, 0.35);
       width: 100%;
+      text-decoration: none;
     }
 
     .btn-danger {
@@ -210,9 +212,9 @@
       justify-content: center;
       gap: 8px;
       width: 100%;
+      text-decoration: none;
     }
 
-    /* CARDS DE STATUS */
     .status-banner {
       border-radius: 12px;
       padding: 14px;
@@ -252,7 +254,6 @@
       margin-bottom: 10px;
     }
 
-    /* CHECKLIST ITENS */
     .checklist-item {
       background: #f9fbf9;
       border: 1.5px solid var(--border-color);
@@ -306,7 +307,6 @@
       color: white;
     }
 
-    /* VIAGEM ATIVA (PONTO ABERTO) */
     .active-trip-card {
       background: #f0fdf4;
       border: 2px solid var(--mactur-green);
@@ -390,41 +390,43 @@
         <button class="btn-logout" onclick="realizarLogout()"><i class="fa-solid fa-power-off"></i> Sair</button>
       </div>
 
-      <!-- SUB-TELA A: PAINEL PRINCIPAL (STATUS CHECKLIST + ABERTURA/FECHAMENTO DE PONTO) -->
+      <!-- SUB-TELA A: PAINEL PRINCIPAL -->
       <div id="viewPrincipal" class="section-body">
 
-        <!-- Banner Status do Checklist -->
         <div id="bannerChecklistPendente" class="status-banner pendente">
           <div>
             <h4><i class="fa-solid fa-triangle-exclamation"></i> Checklist Pendente</h4>
             <p>Realize a vistoria do veículo para liberar o ponto.</p>
           </div>
-          <button class="btn-yellow" style="width:auto; padding:10px 14px; font-size:0.82rem;" onclick="abrirTelaChecklist()">
+          <a id="linkBannerChecklist" href="https://manutencao-mactur.vercel.app/login.html" onclick="irParaChecklistExterno(event)" class="btn-yellow" style="width:auto; padding:10px 14px; font-size:0.82rem;">
             <i class="fa-solid fa-clipboard-check"></i> Fazer Checklist
-          </button>
+          </a>
         </div>
 
         <div id="bannerChecklistOk" class="status-banner ok" style="display:none;">
           <div>
-            <h4><i class="fa-solid fa-circle-check"></i> Checklist Concluído</h4>
+            <h4><i class="fa-solid fa-circle-check"></i> Checklist Validado</h4>
             <p id="lblChecklistResumo">Veículo vistoriado e liberado.</p>
           </div>
-          <button class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.78rem;" onclick="abrirTelaChecklist()">
-            <i class="fa-solid fa-plus"></i> Novo
-          </button>
+          <a id="linkBannerNovoChecklist" href="https://manutencao-mactur.vercel.app/login.html" onclick="irParaChecklistExterno(event)" class="btn-outline" style="width:auto; padding:8px 12px; font-size:0.78rem;">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Novo
+          </a>
         </div>
 
-        <!-- BLOQUEIO ENQUANTO NÃO FIZER CHECKLIST -->
+        <!-- BLOQUEIO ENQUANTO NÃO HOUVER CHECKLIST VÁLIDO DO DIA -->
         <div id="boxPontoBloqueado" class="bloqueio-box">
           <i class="fa-solid fa-lock"></i>
           <h4 style="color:#1c2b1e; margin-bottom:6px;">Registro de Ponto Bloqueado</h4>
           <p style="font-size:0.85rem;">Conforme regra operacional, o primeiro ponto do dia só pode ser registrado após a conclusão do checklist do veículo.</p>
-          <button class="btn-primary" style="margin-top:16px;" onclick="abrirTelaChecklist()">
-            <i class="fa-solid fa-clipboard-list"></i> Iniciar Checklist do Veículo
+          <a id="linkBloqueioChecklist" href="https://manutencao-mactur.vercel.app/login.html" onclick="irParaChecklistExterno(event)" class="btn-primary" style="margin-top:16px;">
+            <i class="fa-solid fa-clipboard-list"></i> Abrir Checklist do Veículo
+          </a>
+          <button type="button" class="btn-outline" style="margin-top:10px;" onclick="sincronizarRetornoChecklist(true)">
+            <i class="fa-solid fa-rotate"></i> Já Finalizei — Atualizar Status
           </button>
         </div>
 
-        <!-- FORMULÁRIO DE ABERTURA DE PONTO (LIBERADO APÓS CHECKLIST) -->
+        <!-- FORMULÁRIO DE ABERTURA DE PONTO -->
         <form id="formAberturaPonto" onsubmit="abrirPonto(event)" style="display:none; flex-direction:column; gap:15px;">
           <h3 style="font-size:1rem; font-weight:900; color:var(--mactur-green); text-transform:uppercase; border-bottom:2px solid var(--mactur-yellow); padding-bottom:6px;">
             <i class="fa-solid fa-play"></i> Abertura de Ponto / Deslocamento
@@ -448,7 +450,6 @@
             </select>
           </div>
 
-          <!-- CAMPOS CONDICIONAIS PARA INÍCIO DE LINHA E DESLOCAMENTO INICIO DE LINHA -->
           <div id="boxClienteLinha" style="display:none; flex-direction:column; gap:14px; background:#f0f7f2; padding:12px; border-radius:10px; border:1px solid #c8e0cc;">
             <div class="form-group">
               <label><i class="fa-solid fa-building"></i> Cliente *</label>
@@ -475,7 +476,7 @@
           </button>
         </form>
 
-        <!-- PAINEL DE PONTO ABERTO (EM ANDAMENTO -> FECHAMENTO) -->
+        <!-- PAINEL DE PONTO ABERTO -->
         <div id="boxPontoAberto" style="display:none; flex-direction:column; gap:16px;">
           <div class="active-trip-card">
             <span class="trip-badge"><i class="fa-solid fa-spinner fa-spin"></i> Deslocamento em Andamento</span>
@@ -511,7 +512,6 @@
               <input type="number" inputmode="numeric" id="pontoKmFinal" class="form-control" placeholder="Informe o KM ao finalizar" required>
             </div>
 
-            <!-- EXIBIDO SOMENTE AO FINALIZAR INICIO DE LINHA -->
             <div class="form-group" id="boxPassageirosFechamento" style="display:none;">
               <label><i class="fa-solid fa-users"></i> Nº de Passageiros Transportados *</label>
               <input type="number" inputmode="numeric" min="0" id="qtdPassageiros" class="form-control" placeholder="Informe a quantidade de passageiros">
@@ -525,7 +525,7 @@
 
       </div>
 
-      <!-- SUB-TELA B: FORMULÁRIO DE CHECKLIST OBRIGATÓRIO -->
+      <!-- SUB-TELA B: FORMULÁRIO DE CHECKLIST LOCAL / ATALHO -->
       <div id="viewChecklist" class="section-body" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--mactur-yellow); padding-bottom:8px;">
           <h3 style="font-size:1rem; font-weight:900; color:var(--mactur-green); text-transform:uppercase;">
@@ -535,6 +535,10 @@
             Voltar
           </button>
         </div>
+
+        <a id="linkViewChecklistExterno" href="https://manutencao-mactur.vercel.app/login.html" onclick="irParaChecklistExterno(event)" class="btn-yellow">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Checklist Oficial (Retorna Aqui ao Finalizar)
+        </a>
 
         <form id="formChecklist" onsubmit="salvarChecklist(event)" style="display:flex; flex-direction:column; gap:14px;">
           <div class="form-group">
@@ -555,10 +559,8 @@
             <span id="chkKmError" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> O KM deve ser igual ou maior ao último abastecimento (<span id="lblChkMinKm">0</span> KM)!</span>
           </div>
 
-          <!-- CONTAINER DOS 8 ITENS OBRIGATÓRIOS -->
           <div id="listaItensChecklist" style="display:flex; flex-direction:column; gap:10px;"></div>
 
-          <!-- CAMPO DE OBSERVAÇÃO (OBRIGATÓRIO SE HOUVER NÃO CONFORME) -->
           <div id="boxObservacaoChecklist" class="form-group">
             <label id="lblObservacaoChecklist"><i class="fa-solid fa-comment-dots"></i> Observações (Opcional)</label>
             <textarea id="chkObservacao" class="form-control" placeholder="Descreva qualquer avaria ou detalhe encontrado..."></textarea>
@@ -577,6 +579,10 @@
   <script>
     const SUPABASE_URL = 'https://lniuhtujzobhfpvsbzic.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxuaXVodHVqem9iaGZwdnNiemljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNDk2OTYsImV4cCI6MjEwNzYyNTY5Nn0.wGLx3arveAzSyNwLNmc0V3p2P3MJpo-EUZRElEq7CRQ';
+    const CHECKLIST_URL = 'https://manutencao-mactur.vercel.app/login.html';
+    const KEY_AGUARDANDO_RETORNO = 'mactur_aguardando_retorno_checklist';
+    const KEY_SESSAO_MOTORISTA = 'mactur_motorista_ponto';
+    const KEY_CHECKLIST_RETORNO = 'mactur_checklist_retorno_validado';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let motoristaLogado = null;
@@ -586,6 +592,7 @@
     let checklistHoje = null;
     let pontoAbertoAtual = null;
     let ultimoKmAbastecimentoAtual = 0;
+    let sincronizandoAgora = false;
 
     const ITENS_VISTORIA = [
       { key: 'pneus', label: '1. Pneus (Calibragem / Estado)', icon: 'fa-circle-dot' },
@@ -600,6 +607,218 @@
 
     let respostasChecklist = {};
 
+    function obterSessaoLocal() {
+      try {
+        const raw = localStorage.getItem(KEY_SESSAO_MOTORISTA);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && (parsed.id || parsed.cpf)) return parsed;
+      } catch (_) {}
+      return null;
+    }
+
+    function aplicarExibicaoLogadoImediata(usuario) {
+      if (!usuario) return;
+      motoristaLogado = usuario;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+      document.getElementById('lblMotoristaNome').innerText = usuario.nome || 'Motorista';
+
+      const sinalRetorno = obterChecklistRetornoValidoHoje();
+      const aguardavaRetorno = Boolean(localStorage.getItem(KEY_AGUARDANDO_RETORNO));
+      if (!checklistHoje && (sinalRetorno || aguardavaRetorno)) {
+        checklistHoje = {
+          id: sinalRetorno?.checklist_id || 'EXTERNO',
+          veiculo_id: sinalRetorno?.veiculo_id || null,
+          km_vistoria: sinalRetorno?.km_vistoria || 0,
+          status_geral: sinalRetorno?.status_geral || 'CONFORME'
+        };
+        atualizarInterfacePrincipal();
+      }
+    }
+
+    // Garante que a tela de login não apareça se já houver sessão salva
+    const sessaoInicial = obterSessaoLocal();
+    if (sessaoInicial) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+      document.getElementById('lblMotoristaNome').innerText = sessaoInicial.nome || 'Motorista';
+    }
+
+    function obterUrlRetornoLimpa() {
+      const url = new URL(window.location.href);
+      [
+        'checklist_concluido',
+        'status_checklist',
+        'retorno',
+        'from_checklist',
+        'checklist_id',
+        'veiculo_id',
+        'km_vistoria',
+        'cpf',
+        'usuario',
+        'motorista_id',
+        'auth',
+        'auto_login'
+      ].forEach(p => url.searchParams.delete(p));
+      return url.toString();
+    }
+
+    function montarUrlChecklistExterno() {
+      const urlDestino = new URL(CHECKLIST_URL);
+      const retornoUrl = obterUrlRetornoLimpa();
+
+      urlDestino.searchParams.set('return_url', retornoUrl);
+      urlDestino.searchParams.set('redirect_to', retornoUrl);
+      urlDestino.searchParams.set('auto_login', '1');
+
+      if (motoristaLogado) {
+        const cpfLimpo = String(motoristaLogado.cpf || '').replace(/\D/g, '');
+        const senhaBanco = String(motoristaLogado.senha || motoristaLogado.senha_hash || '').trim();
+
+        if (motoristaLogado.id) urlDestino.searchParams.set('motorista_id', String(motoristaLogado.id));
+        if (cpfLimpo) {
+          urlDestino.searchParams.set('cpf', cpfLimpo);
+          urlDestino.searchParams.set('usuario', cpfLimpo);
+        }
+        if (senhaBanco) {
+          urlDestino.searchParams.set('auth', btoa(unescape(encodeURIComponent(senhaBanco))));
+        }
+      }
+      return urlDestino.toString();
+    }
+
+    function irParaChecklistExterno(e) {
+      if (e) e.preventDefault();
+      if (motoristaLogado) {
+        localStorage.setItem(KEY_SESSAO_MOTORISTA, JSON.stringify(motoristaLogado));
+      }
+      localStorage.setItem(KEY_AGUARDANDO_RETORNO, JSON.stringify({
+        ts: Date.now(),
+        motorista_id: motoristaLogado?.id || null,
+        cpf: motoristaLogado?.cpf ? String(motoristaLogado.cpf).replace(/\D/g, '') : null
+      }));
+      window.location.href = montarUrlChecklistExterno();
+    }
+
+    async function autenticarAutomaticamentePorParametrosOuSessao() {
+      const params = new URLSearchParams(window.location.search);
+      const cpfParam = String(params.get('cpf') || params.get('usuario') || '').replace(/\D/g, '');
+      const motoristaIdParam = String(params.get('motorista_id') || '').trim();
+      const authParam = params.get('auth');
+
+      let senhaParam = '';
+      if (authParam) {
+        try {
+          senhaParam = decodeURIComponent(escape(atob(authParam))).trim();
+        } catch (_) {
+          senhaParam = '';
+        }
+      }
+
+      const sessaoSalva = obterSessaoLocal();
+      const alvoCpf = cpfParam || (sessaoSalva?.cpf ? String(sessaoSalva.cpf).replace(/\D/g, '') : '');
+      const alvoId = motoristaIdParam || (sessaoSalva?.id ? String(sessaoSalva.id) : '');
+      const alvoSenha = senhaParam || (sessaoSalva ? String(sessaoSalva.senha || sessaoSalva.senha_hash || '').trim() : '');
+
+      if (!alvoCpf && !alvoId) {
+        return null;
+      }
+
+      if (sessaoSalva) {
+        aplicarExibicaoLogadoImediata(sessaoSalva);
+      }
+
+      try {
+        const { data: usuarios, error } = await _supabase.from('usuarios').select('*');
+        if (error || !usuarios || usuarios.length === 0) {
+          return sessaoSalva || null;
+        }
+
+        const encontrado = usuarios.find(u => {
+          const cpfBanco = String(u.cpf || '').replace(/\D/g, '');
+          const matchCpf = alvoCpf && cpfBanco === alvoCpf;
+          const matchId = alvoId && String(u.id) === alvoId;
+          return matchCpf || matchId;
+        });
+
+        if (!encontrado) {
+          return sessaoSalva || null;
+        }
+
+        if (String(encontrado.status || 'ATIVO').toUpperCase() === 'INATIVO') {
+          localStorage.removeItem(KEY_SESSAO_MOTORISTA);
+          return null;
+        }
+
+        const senhaBanco = String(encontrado.senha || encontrado.senha_hash || '').trim();
+        if (alvoSenha && senhaBanco && alvoSenha !== senhaBanco) {
+          return sessaoSalva || null;
+        }
+
+        localStorage.setItem(KEY_SESSAO_MOTORISTA, JSON.stringify(encontrado));
+        return encontrado;
+      } catch (_) {
+        return sessaoSalva || null;
+      }
+    }
+
+    function registrarSinalRetornoChecklistDaUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const aguardavaRetorno = Boolean(localStorage.getItem(KEY_AGUARDANDO_RETORNO));
+      const veioDoChecklistParam =
+        params.has('checklist_concluido') ||
+        params.has('from_checklist') ||
+        params.get('retorno') === '1' ||
+        params.get('status_checklist') === 'OK' ||
+        params.has('checklist_id') ||
+        aguardavaRetorno;
+
+      if (!veioDoChecklistParam) return;
+
+      const anterior = obterChecklistRetornoValidoHoje();
+      const sinal = {
+        ts: Date.now(),
+        checklist_id: params.get('checklist_id') || anterior?.checklist_id || 'EXTERNO',
+        veiculo_id: params.get('veiculo_id') ? Number(params.get('veiculo_id')) : (anterior?.veiculo_id || null),
+        km_vistoria: params.get('km_vistoria') ? Number(params.get('km_vistoria')) : (anterior?.km_vistoria || 0),
+        status_geral: params.get('status_checklist') || anterior?.status_geral || 'CONFORME'
+      };
+      localStorage.setItem(KEY_CHECKLIST_RETORNO, JSON.stringify(sinal));
+    }
+
+    async function sincronizarRetornoChecklist(exibirAviso = false) {
+      if (sincronizandoAgora) return;
+      sincronizandoAgora = true;
+
+      try {
+        registrarSinalRetornoChecklistDaUrl();
+
+        const usuarioAtual = await autenticarAutomaticamentePorParametrosOuSessao();
+        if (usuarioAtual) {
+          motoristaLogado = usuarioAtual;
+          await iniciarSessaoMotorista();
+        } else if (motoristaLogado) {
+          await carregarDadosBase();
+          await verificarEstadoOperacional();
+        }
+
+        if (window.location.search && motoristaLogado) {
+          window.history.replaceState({}, document.title, obterUrlRetornoLimpa());
+        }
+
+        if (exibirAviso && motoristaLogado) {
+          if (checklistHoje) {
+            alert('Checklist validado! Registro de ponto liberado.');
+          } else {
+            alert('Status atualizado. Nenhum checklist do dia encontrado ainda para este motorista.');
+          }
+        }
+      } finally {
+        sincronizandoAgora = false;
+      }
+    }
+
     function ehTipoComClienteLinha(tipo) {
       return tipo === 'INICIO DE LINHA' || tipo === 'DESLOCAMENTO INICIO DE LINHA';
     }
@@ -610,12 +829,36 @@
 
     window.onload = async () => {
       renderizarItensChecklist();
-      const saved = localStorage.getItem('mactur_motorista_ponto');
-      if (saved) {
-        motoristaLogado = JSON.parse(saved);
+      registrarSinalRetornoChecklistDaUrl();
+
+      const aguardavaRetorno = Boolean(localStorage.getItem(KEY_AGUARDANDO_RETORNO));
+      const usuarioAuto = await autenticarAutomaticamentePorParametrosOuSessao();
+
+      if (usuarioAuto) {
+        motoristaLogado = usuarioAuto;
+        localStorage.removeItem(KEY_AGUARDANDO_RETORNO);
         await iniciarSessaoMotorista();
+        if (window.location.search) {
+          window.history.replaceState({}, document.title, obterUrlRetornoLimpa());
+        }
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('appScreen').style.display = 'none';
+        if (aguardavaRetorno) {
+          localStorage.removeItem(KEY_AGUARDANDO_RETORNO);
+        }
       }
     };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        sincronizarRetornoChecklist(false);
+      }
+    });
+
+    window.addEventListener('pageshow', () => {
+      sincronizarRetornoChecklist(false);
+    });
 
     async function realizarLogin(e) {
       e.preventDefault();
@@ -663,7 +906,7 @@
         }
 
         motoristaLogado = user;
-        localStorage.setItem('mactur_motorista_ponto', JSON.stringify(user));
+        localStorage.setItem(KEY_SESSAO_MOTORISTA, JSON.stringify(user));
         await iniciarSessaoMotorista();
 
       } catch (err) {
@@ -676,14 +919,20 @@
     }
 
     function realizarLogout() {
-      localStorage.removeItem('mactur_motorista_ponto');
+      localStorage.removeItem(KEY_SESSAO_MOTORISTA);
+      localStorage.removeItem(KEY_AGUARDANDO_RETORNO);
+      localStorage.removeItem(KEY_CHECKLIST_RETORNO);
       location.reload();
     }
 
     async function iniciarSessaoMotorista() {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('appScreen').style.display = 'block';
-      document.getElementById('lblMotoristaNome').innerText = motoristaLogado.nome;
+      aplicarExibicaoLogadoImediata(motoristaLogado);
+
+      const urlChecklist = montarUrlChecklistExterno();
+      ['linkBannerChecklist', 'linkBannerNovoChecklist', 'linkBloqueioChecklist', 'linkViewChecklistExterno'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.href = urlChecklist;
+      });
 
       await carregarDadosBase();
       await verificarEstadoOperacional();
@@ -709,7 +958,10 @@
 
       if (motoristaLogado && motoristaLogado.garagem_id) {
         const garagemMotorista = String(motoristaLogado.garagem_id);
-        veiculosFiltrados = veiculosFiltrados.filter(v => String(v.garagem_id) === garagemMotorista);
+        const filtradosGaragem = veiculosFiltrados.filter(v => String(v.garagem_id) === garagemMotorista);
+        if (filtradosGaragem.length > 0) {
+          veiculosFiltrados = filtradosGaragem;
+        }
       }
 
       listaVeiculos = veiculosFiltrados.sort((a, b) =>
@@ -831,19 +1083,64 @@
       }
     }
 
-    async function verificarEstadoOperacional() {
-      const inicioHoje = new Date();
-      inicioHoje.setHours(0, 0, 0, 0);
+    function obterChecklistRetornoValidoHoje() {
+      try {
+        const raw = localStorage.getItem(KEY_CHECKLIST_RETORNO);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        const limite = Date.now() - (16 * 60 * 60 * 1000);
+        if (!parsed.ts || parsed.ts < limite) {
+          localStorage.removeItem(KEY_CHECKLIST_RETORNO);
+          return null;
+        }
+        return parsed;
+      } catch (_) {
+        return null;
+      }
+    }
 
+    function ehRegistroDeHoje(registro) {
+      if (!registro) return false;
+      const campoData = registro.data_hora || registro.created_at || registro.data_criacao;
+      if (!campoData) return true;
+      const dt = new Date(campoData);
+      if (isNaN(dt.getTime())) return true;
+      const hoje = new Date();
+      return (
+        dt.getFullYear() === hoje.getFullYear() &&
+        dt.getMonth() === hoje.getMonth() &&
+        dt.getDate() === hoje.getDate()
+      );
+    }
+
+    async function verificarEstadoOperacional() {
       const { data: chks } = await _supabase
         .from('checklists_veiculos')
         .select('*')
         .eq('motorista_id', motoristaLogado.id)
-        .gte('data_hora', inicioHoje.toISOString())
         .order('id', { ascending: false })
-        .limit(1);
+        .limit(5);
 
-      checklistHoje = (chks && chks.length > 0) ? chks[0] : null;
+      const chkDoDia = (chks || []).find(ehRegistroDeHoje) || null;
+      const sinalRetorno = obterChecklistRetornoValidoHoje();
+
+      if (chkDoDia) {
+        checklistHoje = chkDoDia;
+        localStorage.removeItem(KEY_CHECKLIST_RETORNO);
+      } else if (sinalRetorno) {
+        checklistHoje = {
+          id: sinalRetorno.checklist_id || 'EXTERNO',
+          veiculo_id: sinalRetorno.veiculo_id || (listaVeiculos[0]?.id ?? null),
+          km_vistoria: sinalRetorno.km_vistoria || 0,
+          status_geral: sinalRetorno.status_geral || 'CONFORME'
+        };
+      } else {
+        checklistHoje = null;
+      }
+
+      if (checklistHoje && !checklistHoje.veiculo_id && listaVeiculos.length > 0) {
+        checklistHoje.veiculo_id = listaVeiculos[0].id;
+      }
 
       if (checklistHoje && checklistHoje.veiculo_id) {
         ultimoKmAbastecimentoAtual = await buscarUltimoKmVeiculo(checklistHoje.veiculo_id);
@@ -920,13 +1217,15 @@
         formAbertura.style.display = 'flex';
 
         const vObj = listaVeiculos.find(v => String(v.id) === String(checklistHoje.veiculo_id));
-        const nomeVeiculo = vObj ? vObj.prefixo : `ID ${checklistHoje.veiculo_id}`;
-        document.getElementById('lblChecklistResumo').innerText = `Prefixo ${nomeVeiculo} (${checklistHoje.status_geral})`;
+        const nomeVeiculo = vObj ? vObj.prefixo : (checklistHoje.veiculo_id ? `ID ${checklistHoje.veiculo_id}` : 'Veículo Vistoriado');
+        document.getElementById('lblChecklistResumo').innerText = `Prefixo ${nomeVeiculo} (${checklistHoje.status_geral || 'CONFORME'})`;
         document.getElementById('pontoVeiculoDisplay').value = nomeVeiculo;
 
         const kmBase = Math.max(ultimoKmAbastecimentoAtual, Number(checklistHoje.km_vistoria) || 0);
-        document.getElementById('pontoKmInicial').value = kmBase;
-        document.getElementById('pontoKmInicial').min = kmBase;
+        document.getElementById('pontoKmInicial').value = kmBase > 0 ? kmBase : '';
+        if (kmBase > 0) {
+          document.getElementById('pontoKmInicial').min = kmBase;
+        }
         validarKmPontoInicial();
       }
     }
@@ -992,14 +1291,7 @@
     }
 
     function abrirTelaChecklist() {
-      renderizarItensChecklist();
-      document.getElementById('formChecklist').reset();
-      document.getElementById('boxUltimoKmAbastecimento').style.display = 'none';
-      ultimoKmAbastecimentoAtual = 0;
-      validarKmChecklist();
-      validarObrigatoriedadeObservacao();
-      document.getElementById('viewPrincipal').style.display = 'none';
-      document.getElementById('viewChecklist').style.display = 'flex';
+      irParaChecklistExterno(null);
     }
 
     function voltarTelaPrincipal() {
@@ -1062,6 +1354,7 @@
         if (error) throw error;
 
         checklistHoje = data;
+        localStorage.removeItem(KEY_CHECKLIST_RETORNO);
         alert('Checklist registrado com sucesso! Registro de ponto liberado.');
         voltarTelaPrincipal();
         atualizarInterfacePrincipal();
@@ -1144,10 +1437,11 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
 
       try {
+        const veiculoIdFinal = checklistHoje.veiculo_id || (listaVeiculos[0]?.id ?? null);
         const payload = {
           motorista_id: motoristaLogado.id,
-          veiculo_id: checklistHoje.veiculo_id,
-          checklist_id: checklistHoje.id,
+          veiculo_id: veiculoIdFinal,
+          checklist_id: typeof checklistHoje.id === 'number' ? checklistHoje.id : null,
           tipo_deslocamento: tipo,
           cliente_id: clienteId,
           linha_id: linhaId,
